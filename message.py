@@ -35,10 +35,14 @@ class Message:
         self.value = value
 
     def create_ok_get_message(self, value):
-        return self.create_response_message('ok').addValue(value)
+        message = self.create_response_message('ok').addValue(value)
+        return {'src': message.src, 'dst': message.dst, 'leader':message.leader,
+                'type': message.type, 'MID': message.message_id, 'value': message.value}
 
     def create_ok_put_message(self):
-        return self.create_response_message('ok')
+        message = self.create_response_message('ok')
+        return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
+                'type': message.type, 'MID': message.message_id}
 
     def create_fail_message(self):
         return self.create_response_message('fail').addValue("")
