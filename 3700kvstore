@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys, socket, select, time, json, random
+from message import Message
 
 # Your ID number
 my_id = sys.argv[1]
@@ -15,21 +16,53 @@ sock.connect(my_id)
 
 last = 0
 
-
-def action(msg):
-    if msg['type'] == 'get':
-        get()
-    elif msg['type'] == 'put':
-        put()
+KEY_VALUE_STORE = {}
 
 
-def get():
+def action(message):
+    global KEY_VALUE_STORE
+
+    if message.type == 'get':
+        get(message)
+    elif message.type == 'put':
+        put(message)
+
+
+def get(message):
+    global KEY_VALUE_STORE
+
     print "Get"
+    if message.key not in KEY_VALUE_STORE:
+        send(message.create_fail_message())
+
+    else:
+        send(message.create_ok_get_message())
 
 
-def put():
+def put(message):
+    global KEY_VALUE_STORE
+
     print "Put"
 
+    put_into_store(message.key, message.value)
+    print "Added " + str(message.key) + " with value " + str(message.value)
+
+    #assuming successful
+    send(message.create_ok_put_message())
+
+def put_into_store(key, value):
+    global KEY_VALUE_STORE
+
+    KEY_VALUE_STORE[key] = value
+
+
+def send(json_message):
+    print "sending"
+
+    try:
+        sock.send(json_message)
+    except:
+        raise Exception("Could not successfully send message")
 
 
 while True:
@@ -42,13 +75,14 @@ while True:
             continue
 
         msg = json.loads(msg_raw)
+        message = Message.create_message_from_json(msg)
 
         # For now, ignore get() and put() from clients
-        if msg['type'] in ['get', 'put']:
+        if message.type in ['get', 'put']:
             action(msg)
 
         # Handle noop messages. This may be removed from your final implementation
-        elif msg['type'] == 'noop':
+        elif message.type == 'noop':
             print '%s received a NOOP from %s' % (msg['dst'], msg['src'])
 
     clock = time.time()
