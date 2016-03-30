@@ -11,6 +11,8 @@ class Message:
 
     @staticmethod
     def create_message_from_json(json):
+        print "\n\nJSON = " + str(json) + "\n\n"
+
         try:
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
             print "NEW MESSAGE CREATED ###############################"
