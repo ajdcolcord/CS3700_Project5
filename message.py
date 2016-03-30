@@ -17,9 +17,12 @@ class Message:
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
             print "NEW MESSAGE CREATED ###############################"
             if json['key']:
-                newMessage.key = json['key']
+                print 'found key: ' + str(json['key'])
+                newMessage.add_key(json['key'])
             if json['value']:
-                newMessage.value = json['value']
+                print 'found value: ' + str(json['value'])
+
+                newMessage.add_value(json['value'])
             return newMessage
         except:
             raise Exception("Malformed message: " + str(json))
