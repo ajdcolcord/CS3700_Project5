@@ -16,10 +16,10 @@ class Message:
         try:
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
             print "NEW MESSAGE CREATED ###############################"
-            #if json['key']:
-            #    newMessage.key = json['key']
-            #if json['value']:
-            #    newMessage.value = json['value']
+            if json['key']:
+                newMessage.key = json['key']
+            if json['value']:
+                newMessage.value = json['value']
             return newMessage
         except:
             raise Exception("Malformed message: " + str(json))
@@ -36,9 +36,8 @@ class Message:
     def create_ok_get_message(self, value):
         print 'createOK GET'
         message = self.create_response_message('ok')
-        message.add_value(value)
         return {'src': message.src, 'dst': message.dst, 'leader':message.leader,
-                'type': message.type, 'MID': message.message_id, 'value': message.value}
+                'type': message.type, 'MID': message.message_id, 'value': value}
 
     def create_ok_put_message(self):
         print 'createOK'
