@@ -19,10 +19,13 @@ class Message:
             if json['key']:
                 print 'found key: ' + str(json['key'])
                 newMessage.add_key(json['key'])
+                print "added key: " + str(newMessage.key)
             if json['value']:
                 print 'found value: ' + str(json['value'])
 
                 newMessage.add_value(json['value'])
+                print "added value: " + str(newMessage.value)
+
             return newMessage
         except:
             raise Exception("Malformed message: " + str(json))
