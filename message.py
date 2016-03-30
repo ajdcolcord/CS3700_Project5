@@ -22,8 +22,7 @@ class Message:
                 newMessage.value = json['value']
             return newMessage
         except:
-            print "\n\nBAD = " + str(json) + "\n\n"
-            raise Exception("Malformed message")
+            raise Exception("Malformed message: " + str(json))
 
     def create_response_message(self, type):
         return Message(self.dst, self.src, self.leader, type, self.message_id)
@@ -35,7 +34,7 @@ class Message:
         self.value = value
 
     def create_ok_get_message(self, value):
-        message = self.create_response_message('ok').addValue(value)
+        message = self.create_response_message('ok').add_value(value)
         return {'src': message.src, 'dst': message.dst, 'leader':message.leader,
                 'type': message.type, 'MID': message.message_id, 'value': message.value}
 
@@ -45,4 +44,4 @@ class Message:
                 'type': message.type, 'MID': message.message_id}
 
     def create_fail_message(self):
-        return self.create_response_message('fail').addValue("")
+        return self.create_response_message('fail').add_value("")
