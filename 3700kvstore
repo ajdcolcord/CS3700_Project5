@@ -36,7 +36,7 @@ def get(message):
         send(message.create_fail_message())
 
     else:
-        send(message.create_ok_get_message())
+        send(message.create_ok_get_message(KEY_VALUE_STORE[message.key]))
 
 
 def put(message):
