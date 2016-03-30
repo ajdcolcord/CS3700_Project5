@@ -13,6 +13,7 @@ class Message:
     def create_message_from_json(json):
         try:
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
+            print "NEW MESSAGE CREATED ###############################"
             if json['key']:
                 newMessage.key = json['key']
             if json['value']:
