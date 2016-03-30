@@ -26,7 +26,7 @@ class Message:
             raise Exception("Malformed message")
 
     def create_response_message(self, type):
-        Message(self.dst, self.src, self.leader, type, self.message_id)
+        return Message(self.dst, self.src, self.leader, type, self.message_id)
 
     def add_key(self, key):
         self.key = key
