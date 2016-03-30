@@ -22,6 +22,7 @@ class Message:
                 newMessage.value = json['value']
             return newMessage
         except:
+            print "\n\nBAD = " + str(json) + "\n\n"
             raise Exception("Malformed message")
 
     def create_response_message(self, type):
