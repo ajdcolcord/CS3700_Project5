@@ -15,6 +15,23 @@ sock.connect(my_id)
 
 last = 0
 
+
+def action(msg):
+    if msg['type'] == 'get':
+        get()
+    elif msg['type'] == 'put':
+        put()
+
+
+def get():
+    print "Get"
+
+
+def put():
+    print "Put"
+
+
+
 while True:
     ready = select.select([sock], [], [], 0.1)[0]
 
@@ -28,7 +45,7 @@ while True:
 
         # For now, ignore get() and put() from clients
         if msg['type'] in ['get', 'put']:
-            pass
+            action(msg)
 
         # Handle noop messages. This may be removed from your final implementation
         elif msg['type'] == 'noop':
@@ -42,3 +59,6 @@ while True:
         sock.send(json.dumps(msg))
         print '%s sending a NOOP to %s' % (msg['src'], msg['dst'])
         last = clock
+
+
+
