@@ -1,6 +1,6 @@
 class Message:
 
-    def __init__(self, src, dst, leader, type, message_id, key=None, value=None):
+    def __init__(self, src, dst, leader, type, message_id = None, key=None, value=None):
         self.src = src
         self.dst = dst
         self.leader = leader
@@ -14,8 +14,10 @@ class Message:
         print "\n\nJSON = " + str(json) + "\n\n"
 
         try:
-            newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
+            newMessage = Message(json['src'], json['dst'], json['leader'], json['type'])
             print "NEW MESSAGE CREATED ###############################"
+            if json['MID']:
+                newMessage.message_id = json['MID']
             if json['key']:
                 newMessage.key = json['key']
             if json['value']:
