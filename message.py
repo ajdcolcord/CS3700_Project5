@@ -20,7 +20,7 @@ class Message:
                 print 'found key: ' + str(json['key'])
                 newMessage.add_key(json['key'])
                 print "added key: " + str(newMessage.key)
-            if json['value']:
+            if json.get('value'):
                 print 'found value: ' + str(json['value'])
 
                 newMessage.add_value(json['value'])
