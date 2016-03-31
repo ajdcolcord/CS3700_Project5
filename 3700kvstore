@@ -21,7 +21,9 @@ KEY_VALUE_STORE = {}
 # Node state: Follower, Candidate, Leader
 NODE_STATE = "F"
 LEADER_ADDRESS = 0
-# ELECTION_TIMEOUT_START = datetime.datetime.now()
+# Random # between 150 and 300 ms
+ELECTION_TIMEOUT = get_new_election_timeout()
+ELECTION_TIMEOUT_START = datetime.datetime.now()
 
 # If the node doesn't hear from a leader they become a candidate.
 # The candidate then requests votes from other nodes
@@ -138,6 +140,17 @@ def am_i_leader():
     global my_id
 
     return LEADER_ADDRESS == my_id
+
+def is_election_over():
+    global ELECTION_TIMEOUT_START
+
+    return (datetime.datetime.now() - ELECTION_TIMEOUT_START) > ELECTION_TIMEOUT
+
+def get_new_election_timeout():
+    return random.randint(150,300)
+
+def send_vote_request():
+    # Send a vote request message to all other followers
 
 
 while True:
