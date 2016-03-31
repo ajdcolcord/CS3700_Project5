@@ -17,6 +17,7 @@ sock.connect(my_id)
 last = 0
 
 KEY_VALUE_STORE = {}
+LEADER_ADDRESS = 0
 
 
 def action(message):
