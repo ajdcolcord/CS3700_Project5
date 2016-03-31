@@ -1,6 +1,6 @@
 class Message:
 
-    def __init__(self, src, dst, leader, type, message_id, key=None, value=None):
+    def __init__(self, src, dst, leader, type, message_id, key=None, value=None, term=None):
         self.src = src
         self.dst = dst
         self.leader = leader
@@ -8,6 +8,7 @@ class Message:
         self.message_id = message_id
         self.key = key
         self.value = value
+        self.term = term
 
     @staticmethod
     def create_message_from_json(json):
@@ -16,17 +17,35 @@ class Message:
             if json['key']:
                 newMessage.add_key(json['key'])
                 print "added key: " + str(newMessage.key)
-            if json.get('value'):
 
+            if json.get('value'):
                 newMessage.add_value(json['value'])
                 print "added value: " + str(newMessage.value)
+
+            if json.get('term'):
+                newMessage.term = json['term']
 
             return newMessage
         except:
             raise Exception("Malformed message: " + str(json))
 
+    # @staticmethod
+    # def create_vote_message_from_json(json):
+    #     try:
+    #         newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
+    #         if json['key']:
+    #             newMessage.add_key(json['key'])
+    #             print "added key: " + str(newMessage.key)
+    #         if json.get('value'):
+    #             newMessage.add_value(json['value'])
+    #             print "added value: " + str(newMessage.value)
+    #
+    #         return newMessage
+    #     except:
+    #         raise Exception("Malformed message: " + str(json))
+
     def create_response_message(self, type):
-        return Message(self.dst, self.src, self.leader, type, self.message_id)
+        return Message(self.dst, self.src, self.leader, type, self.message_id, term=self.term)
 
     def add_key(self, key):
         self.key = key
@@ -50,4 +69,15 @@ class Message:
         message = self.create_response_message('fail')
         return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
                 'type': message.type, 'MID': message.message_id}
+
+    def create_vote_message(self):
+        message = self.create_response_message('vote')
+        return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
+                'type': message.type, 'MID': message.message_id, 'term': message.term}
+
+    def create_vote_request_message(self, term):
+        message = self.create_response_message('voteRequest')
+        return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
+                'type': message.type, 'MID': message.message_id, 'term': term}
+
 

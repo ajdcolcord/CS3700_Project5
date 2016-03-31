@@ -21,6 +21,8 @@ ELECTION_TIMEOUT = random.randint(150,300)
 ELECTION_TIMEOUT_START = datetime.datetime.now()
 CURRENT_TERM = 0
 VOTED_FOR = None
+VOTES_RECIEVED = 0
+QUORUM_SIZE = 3
 
 
 
@@ -28,6 +30,7 @@ def get_new_election_timeout():
     global CURRENT_TERM
     global ELECTION_TIMEOUT
     global ELECTION_TIMEOUT_START
+    global VOTED_FOR
 
     ELECTION_TIMEOUT = random.randint(150,300)
     ELECTION_TIMEOUT_START = datetime.datetime.now()
@@ -106,7 +109,7 @@ LEADER_ADDRESS = 0
 
 
 
-def action(message):
+def client_action(message):
     global KEY_VALUE_STORE
 
     if message.type == 'get':
@@ -157,15 +160,33 @@ def am_i_leader():
 
     return LEADER_ADDRESS == my_id
 
-def is_election_over():
+def election_timedout():
     global ELECTION_TIMEOUT_START
 
     return (datetime.datetime.now() - ELECTION_TIMEOUT_START) > ELECTION_TIMEOUT
 
 
+def send_vote(vote_request_from_candidate):
+    """
+    When a Follower, send a vote back to the requesting Candidate
+    """
+    global VOTED_FOR
+
+    if VOTED_FOR is None:
+        VOTED_FOR = vote_request_from_candidate.src
+        message = vote_request_from_candidate.create_vote_message()
+        send(message)
+
+
 def send_vote_request():
-    # Send a vote request message to all other followers
-    return 1
+    global VOTED_FOR
+
+    if VOTED_FOR is None:
+        # Send a vote request message to all other followers
+        vote = Message(my_id, "FFFF", my_id, "voteRequest", 1234567890)
+        vote.create_vote_request_message(CURRENT_TERM)
+        VOTED_FOR = my_id
+        send(vote)
 
 
 def initiate_election():
@@ -175,43 +196,29 @@ def initiate_election():
 
     send_vote_request()
 
-    listen_for_votes()
 
+def receive_vote(message):
 
-    return 1
+    request_vote_RPC(message.term, message.src, msg['lastLogIndex'], msg['lastLogTerm'])
 
 def request_vote_RPC(term, candidateId, lastLogIndex, lastLogTerm):
-    global CURRENT_TERM
+    global CURRENT_TERM, VOTES_RECIEVED
+
     if term < CURRENT_TERM:
         return False # reply false
     else:
-        pass
+        VOTES_RECIEVED += 1
 
 
-
-
+def change_to_leader():
+    global NODE_STATE
+    NODE_STATE = "L"
 
 
 
 
 while True:
 
-    #if NODE_STATE == "F": - run follower directions
-    #    - check leader_timeout:
-    #           -if timedout, request election
-    #           -else: continue (listen for messages from leader)
-
-
-    #if NODE_STATE == "C": - run candidate directions
-    #    - check election_timeout:
-    #           if election_timedut:...
-    #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
-
-
-    #if NODE_STATE == "L": - run leader directions
-    #    - check self.timeout:
-    #           if timedout: change NODE_STATE to "F", initiate election cycle
-    #           else: continue (continue listening for messages from client, sending updates to followers)
 
 
     ready = select.select([sock], [], [], 0.1)[0]
@@ -224,11 +231,42 @@ while True:
 
         msg = json.loads(msg_raw)
 
-        # For now, ignore get() and put() from clients
-        if msg['type'] in ['get', 'put']:
-            message = Message.create_message_from_json(msg)
+        # if NODE_STATE == "L": - run leader directions
+        #    - check self.timeout:
+        #           if timedout: change NODE_STATE to "F", initiate election cycle
+        #           else: continue (continue listening for messages from client, sending updates to followers)
+        if NODE_STATE == "L":
+            # For now, ignore get() and put() from clients
+            if msg['type'] in ['get', 'put']:
+                message = Message.create_message_from_json(msg)
 
-            action(message)
+                client_action(message)
+
+        # if NODE_STATE == "C": - run candidate directions
+        #    - check election_timeout:
+        #           if election_timedut:...
+        #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
+        if NODE_STATE == "C":
+            if msg['type'] =='vote':
+
+                message = Message.create_message_from_json(msg)
+                receive_vote(message)
+                if VOTES_RECIEVED >= QUORUM_SIZE:
+                    change_to_leader()
+
+
+        # if NODE_STATE == "F": - run follower directions
+        #    - check leader_timeout:
+        #           -if timedout, request election
+        #           -else: continue (listen for messages from leader)
+        if NODE_STATE == "F":
+            if election_timedout():
+                initiate_election()
+            else:
+                if msg['type'] == 'voteRequest':
+                    vote_req_message = Message.create_message_from_json(msg)
+                    send_vote(vote_req_message)
+
 
         # Handle noop messages. This may be removed from your final implementation
         elif msg['type'] == 'noop':
