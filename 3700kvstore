@@ -18,7 +18,7 @@ last = 0
 
 KEY_VALUE_STORE = {}
 # Node state: Follower, Candidate, Leader
-NODE_STATE = "C"
+NODE_STATE = "F"
 LEADER_ADDRESS = 0
 
 
