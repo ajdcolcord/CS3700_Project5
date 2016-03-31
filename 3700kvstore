@@ -17,16 +17,29 @@ sock.connect(my_id)
 
 last = 0
 
+ELECTION_TIMEOUT = random.randint(150,300)
+ELECTION_TIMEOUT_START = datetime.datetime.now()
+CURRENT_TERM = 0
+VOTED_FOR = None
+
+
+
 def get_new_election_timeout():
-    return random.randint(150,300)
+    global CURRENT_TERM
+    global ELECTION_TIMEOUT
+    global ELECTION_TIMEOUT_START
+
+    ELECTION_TIMEOUT = random.randint(150,300)
+    ELECTION_TIMEOUT_START = datetime.datetime.now()
+    CURRENT_TERM += 1
+    VOTED_FOR = None
+
 
 KEY_VALUE_STORE = {}
 # Node state: Follower, Candidate, Leader
 NODE_STATE = "F"
 LEADER_ADDRESS = 0
-# Random # between 150 and 300 ms
-ELECTION_TIMEOUT = get_new_election_timeout()
-ELECTION_TIMEOUT_START = datetime.datetime.now()
+
 
 # If the node doesn't hear from a leader they become a candidate.
 # The candidate then requests votes from other nodes
@@ -134,7 +147,7 @@ def send(json_message):
     print "sending"
 
     try:
-        sock.send(json.dumps(json_message))
+        sock.send(json.dumps(json_message) + '\n')
     except:
         raise Exception("Could not successfully send message")
 
@@ -155,7 +168,52 @@ def send_vote_request():
     return 1
 
 
+def initiate_election():
+    global NODE_STATE
+    get_new_election_timeout()
+    NODE_STATE = "C"
+
+    send_vote_request()
+
+    listen_for_votes()
+
+
+    return 1
+
+def request_vote_RPC(term, candidateId, lastLogIndex, lastLogTerm):
+    global CURRENT_TERM
+    if term < CURRENT_TERM:
+        return False # reply false
+    else:
+        pass
+
+
+
+
+
+
+
+
 while True:
+
+    #if NODE_STATE == "F": - run follower directions
+    #    - check leader_timeout:
+    #           -if timedout, request election
+    #           -else: continue (listen for messages from leader)
+
+
+    #if NODE_STATE == "C": - run candidate directions
+    #    - check election_timeout:
+    #           if election_timedut:...
+    #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
+
+
+    #if NODE_STATE == "L": - run leader directions
+    #    - check self.timeout:
+    #           if timedout: change NODE_STATE to "F", initiate election cycle
+    #           else: continue (continue listening for messages from client, sending updates to followers)
+
+
     ready = select.select([sock], [], [], 0.1)[0]
 
     if sock in ready:
