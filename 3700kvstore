@@ -17,6 +17,9 @@ sock.connect(my_id)
 
 last = 0
 
+def get_new_election_timeout():
+    return random.randint(150,300)
+
 KEY_VALUE_STORE = {}
 # Node state: Follower, Candidate, Leader
 NODE_STATE = "F"
@@ -146,8 +149,6 @@ def is_election_over():
 
     return (datetime.datetime.now() - ELECTION_TIMEOUT_START) > ELECTION_TIMEOUT
 
-def get_new_election_timeout():
-    return random.randint(150,300)
 
 def send_vote_request():
     # Send a vote request message to all other followers
