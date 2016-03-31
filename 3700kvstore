@@ -17,6 +17,8 @@ sock.connect(my_id)
 last = 0
 
 KEY_VALUE_STORE = {}
+# Node state: Follower, Candidate, Leader
+NODE_STATE = "C"
 LEADER_ADDRESS = 0
 
 
