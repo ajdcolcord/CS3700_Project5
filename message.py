@@ -70,10 +70,10 @@ class Message:
         return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
                 'type': message.type, 'MID': message.message_id}
 
-    def create_vote_message(self):
+    def create_vote_message(self, src):
         message = self.create_response_message('vote')
-        return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
-                'type': message.type, 'MID': message.message_id, 'term': message.term}
+        return {'src': src, 'dst': message.dst, 'leader': message.leader,
+                'type': 'vote', 'MID': message.message_id, 'term': message.term}
 
     def create_vote_request_message(self, term):
         message = self.create_response_message('voteRequest')

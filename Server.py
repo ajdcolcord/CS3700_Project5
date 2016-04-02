@@ -69,7 +69,7 @@ class Server:
         """
         if self.voted_for is None:
             self.voted_for = vote_request_from_candidate.src
-            json_message = vote_request_from_candidate.create_vote_message()
+            json_message = vote_request_from_candidate.create_vote_message(self.id)
             send(json_message)
 
     def send_vote_request(self):
