@@ -152,7 +152,7 @@ def send(json_message):
     try:
         sock.send(json.dumps(json_message) + '\n')
     except:
-        raise Exception("Could not successfully send message")
+        raise Exception("Could not successfully send message" + str(json_message))
 
 def am_i_leader():
     global LEADER_ADDRESS
