@@ -17,6 +17,7 @@ class Message:
             print "EACH FIELD: " + str(json['src']) + str(json['dst']) + str(json['leader']) + str(json['type']) + str(json['MID'])
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
             print newMessage
+
             if json['key']:
                 print 'adding key'
                 newMessage.add_key(json['key'])
@@ -26,10 +27,11 @@ class Message:
                 print 'adding value'
                 newMessage.add_value(json['value'])
                 print "added value: " + str(newMessage.value)
-
+            '''
             if json.get('term'):
                 print 'adding term'
                 newMessage.term = json['term']
+            '''
 
             return newMessage
         except:
