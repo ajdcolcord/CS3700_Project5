@@ -109,6 +109,6 @@ class Server:
             self.reset_heartbeat_timeout()
             self.send(message)
 
-
     def change_to_leader(self):
         self.node_state = "L"
+        self.send_heartbeat()
