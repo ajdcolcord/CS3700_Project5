@@ -38,7 +38,9 @@ while True:
             if msg['type'] in ['get', 'put']:
                 message = Message.create_message_from_json(msg)
 
+
                 SERVER.client_action(message)
+                SERVER.send_heartbeat()
 
         # if NODE_STATE == "C": - run candidate directions
         #    - check election_timeout:
@@ -82,8 +84,6 @@ while True:
         # Handle noop messages. This may be removed from your final implementation
         elif msg['type'] == 'noop':
             print '%s received a NOOP from %s' % (msg['dst'], msg['src'])
-    else:
-        print str(SERVER.id) + ": Not ready"
 
     '''
     clock = time.time()
