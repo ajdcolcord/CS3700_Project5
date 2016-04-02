@@ -46,6 +46,12 @@ while True:
         #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
         if SERVER.node_state == "C":
             print str(SERVER.id) + ": Message: " + str(msg)
+
+            if msg['type'] == 'heartbeat':
+                SERVER.get_new_election_timeout()
+                SERVER.node_state = "F"
+                SERVER.voted_for = None
+
             if msg['type'] == 'vote':
                 print str(SERVER.id) + ": Got Vote-------------"
 
