@@ -13,16 +13,22 @@ class Message:
     @staticmethod
     def create_message_from_json(json):
         try:
+            print json
+            print json['src'], json['dst'], json['leader'], json['type'], json['MID']
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
+            print newMessage
             if json['key']:
+                print 'adding key'
                 newMessage.add_key(json['key'])
                 print "added key: " + str(newMessage.key)
 
             if json.get('value'):
+                print 'adding value'
                 newMessage.add_value(json['value'])
                 print "added value: " + str(newMessage.value)
 
             if json.get('term'):
+                print 'adding term'
                 newMessage.term = json['term']
 
             return newMessage
