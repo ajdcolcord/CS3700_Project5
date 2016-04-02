@@ -81,7 +81,7 @@ class Server:
             self.send(json_message)
 
     def initiate_election(self):
-        get_new_election_timeout()
+        self.get_new_election_timeout()
         self.node_state = "C"
         self.send_vote_request()
 
