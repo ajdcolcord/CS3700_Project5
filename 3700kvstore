@@ -174,8 +174,8 @@ def send_vote(vote_request_from_candidate):
 
     if VOTED_FOR is None:
         VOTED_FOR = vote_request_from_candidate.src
-        message = vote_request_from_candidate.create_vote_message()
-        send(message)
+        json_message = vote_request_from_candidate.create_vote_message()
+        send(json_message)
 
 
 def send_vote_request():
@@ -184,9 +184,9 @@ def send_vote_request():
     if VOTED_FOR is None:
         # Send a vote request message to all other followers
         vote = Message(my_id, "FFFF", my_id, "voteRequest", 1234567890)
-        vote.create_vote_request_message(CURRENT_TERM)
+        json_message = vote.create_vote_request_message(CURRENT_TERM)
         VOTED_FOR = my_id
-        send(vote)
+        send(json_message)
 
 
 def initiate_election():
