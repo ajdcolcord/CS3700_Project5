@@ -57,13 +57,13 @@ while True:
         #           -else: continue (listen for messages from leader)
         if SERVER.node_state == "F":
             print str(SERVER.id) + " FOLLOWER GOT " + str(msg)
-            if SERVER.election_timedout():
+
+            if msg['type'] == 'voteRequest':
+                print str(SERVER.id) + "RECEIVED VOTE REQUEST"
+                vote_req_message = Message.create_message_from_json(msg)
+                SERVER.send_vote(vote_req_message)
+            elif SERVER.election_timedout():
                 SERVER.initiate_election()
-            else:
-                if msg['type'] == 'voteRequest':
-                    print str(SERVER.id) + "RECEIVED VOTE REQUEST"
-                    vote_req_message = Message.create_message_from_json(msg)
-                    SERVER.send_vote(vote_req_message)
 
 
         # Handle noop messages. This may be removed from your final implementation
