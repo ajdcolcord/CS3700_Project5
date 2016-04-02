@@ -71,7 +71,7 @@ class Server:
             self.get_new_election_timeout()
             self.voted_for = vote_request_from_candidate.src
             json_message = vote_request_from_candidate.create_vote_message(self.id)
-            send(json_message)
+            self.send(json_message)
 
     def send_vote_request(self):
         if self.voted_for is None:
