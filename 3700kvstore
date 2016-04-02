@@ -60,6 +60,7 @@ while True:
                 SERVER.initiate_election()
             else:
                 if msg['type'] == 'voteRequest':
+                    print str (SERVER.id) + "RECEIVED VOTE REQUEST"
                     vote_req_message = Message.create_message_from_json(msg)
                     SERVER.send_vote(vote_req_message)
 
