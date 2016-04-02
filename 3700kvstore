@@ -249,6 +249,7 @@ while True:
         #           if election_timedut:...
         #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
         if NODE_STATE == "C":
+            print str(my_id) + ": Message: " + str(msg)
             if msg['type'] =='vote':
                 print str(my_id) + ": Got Vote-------------"
 
