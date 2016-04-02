@@ -81,8 +81,8 @@ while True:
                 vote_req_message = Message.create_message_from_json(msg)
                 SERVER.send_vote(vote_req_message)
 
-            # if SERVER.election_timedout():
-            #     SERVER.initiate_election()
+            if SERVER.election_timedout():
+                 SERVER.initiate_election()
 
 
         # Handle noop messages. This may be removed from your final implementation
