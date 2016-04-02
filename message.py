@@ -90,4 +90,9 @@ class Message:
         return {'src': src, 'dst': "FFFF", 'leader': message.leader,
                 'type': message.type, 'MID': message.message_id, 'term': term}
 
+    @staticmethod
+    def create_heart_beat_message(src, term):
+        return {'src': src, 'dst': "FFFF", 'leader': src,
+                'type': 'heartbeat', 'MID': 1234567890, 'term': term}
+
 
