@@ -163,7 +163,7 @@ def am_i_leader():
 def election_timedout():
     global ELECTION_TIMEOUT_START
 
-    return (datetime.datetime.now() - ELECTION_TIMEOUT_START) > ELECTION_TIMEOUT
+    return (datetime.datetime.now() - ELECTION_TIMEOUT_START).microseconds > ELECTION_TIMEOUT
 
 
 def send_vote(vote_request_from_candidate):
