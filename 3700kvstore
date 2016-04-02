@@ -218,6 +218,7 @@ def change_to_leader():
 
 
 while True:
+    print str(my_id) + ": Node State = " + str(NODE_STATE)
 
 
 
