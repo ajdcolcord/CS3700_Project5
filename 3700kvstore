@@ -44,6 +44,7 @@ while True:
 
                 SERVER.client_action(message)
                 #SERVER.send_heartbeat()
+                
 
         # if NODE_STATE == "C": - run candidate directions
         #    - check election_timeout:
