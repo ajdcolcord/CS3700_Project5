@@ -121,7 +121,7 @@ def client_action(message):
 def get(message):
     global KEY_VALUE_STORE
 
-    print "Get"
+    print str(my_id) + ": Get"
     if message.key not in KEY_VALUE_STORE:
         send(message.create_fail_message())
 
@@ -132,10 +132,10 @@ def get(message):
 def put(message):
     global KEY_VALUE_STORE
 
-    print "Put"
+    print str(my_id) + ": Put"
 
     put_into_store(message.key, message.value)
-    print "Added " + str(message.key) + " with value " + str(message.value)
+    print str(my_id) + ": Added " + str(message.key) + " with value " + str(message.value)
 
     #assuming successful
     send(message.create_ok_put_message())
@@ -147,7 +147,7 @@ def put_into_store(key, value):
 
 
 def send(json_message):
-    print "sending"
+    print str(my_id) + ": sending"
 
     try:
         sock.send(json.dumps(json_message) + '\n')
@@ -224,6 +224,7 @@ while True:
     ready = select.select([sock], [], [], 0.1)[0]
 
     if sock in ready:
+        print str(my_id) + ": Ready"
         msg_raw = sock.recv(32768)
 
         if len(msg_raw) == 0:
@@ -271,6 +272,8 @@ while True:
         # Handle noop messages. This may be removed from your final implementation
         elif msg['type'] == 'noop':
             print '%s received a NOOP from %s' % (msg['dst'], msg['src'])
+    else:
+        print str(my_id) + ": Not ready"
 
     '''
     clock = time.time()
