@@ -87,7 +87,7 @@ class Server:
         self.send_vote_request()
 
     def receive_vote(self, message):
-        self.request_vote_RPC(message.term, message.src, msg['lastLogIndex'], msg['lastLogTerm'])
+        self.request_vote_RPC(message.term, message.src, 1, 1) #, msg['lastLogIndex'], msg['lastLogTerm'])
 
     def request_vote_RPC(self, term, candidateId, lastLogIndex, lastLogTerm):
         if term < self.current_term:
