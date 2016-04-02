@@ -82,7 +82,7 @@ class Server:
 
     def send_vote_request(self):
         if self.voted_for is None:
-            self.current_term += 1
+            #self.current_term += 1
             # Send a vote request message to all other followers
             vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
             json_message = vote.create_vote_request_message(self.id, self.current_term)
