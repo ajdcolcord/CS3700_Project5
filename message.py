@@ -18,8 +18,8 @@ class Message:
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
             print newMessage
 
-            '''
-            if json['key']:
+
+            if json.get('key'):
                 print 'adding key'
                 newMessage.add_key(json['key'])
                 print "added key: " + str(newMessage.key)
@@ -28,12 +28,12 @@ class Message:
                 print 'adding value'
                 newMessage.add_value(json['value'])
                 print "added value: " + str(newMessage.value)
-            '''
-            '''
+
+
             if json.get('term'):
                 print 'adding term'
                 newMessage.term = json['term']
-            '''
+
 
             return newMessage
         except:
