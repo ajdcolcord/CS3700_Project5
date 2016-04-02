@@ -42,7 +42,7 @@ while True:
         #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
         if SERVER.node_state == "C":
             print str(SERVER.id) + ": Message: " + str(msg)
-            if msg['type'] =='vote':
+            if msg['type'] == 'vote':
                 print str(SERVER.id) + ": Got Vote-------------"
 
                 message = Message.create_message_from_json(msg)
@@ -60,7 +60,7 @@ while True:
                 SERVER.initiate_election()
             else:
                 if msg['type'] == 'voteRequest':
-                    print str (SERVER.id) + "RECEIVED VOTE REQUEST"
+                    print str(SERVER.id) + "RECEIVED VOTE REQUEST"
                     vote_req_message = Message.create_message_from_json(msg)
                     SERVER.send_vote(vote_req_message)
 
