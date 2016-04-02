@@ -23,10 +23,11 @@ class Server:
     def get_new_election_timeout(self):
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
+        self.current_term += 1
         self.voted_for = None
 
-    def reset_heartbeat_timeout(self):
-        self.heartbeat_timeout_start = datetime.datetime.now()
+    #def reset_heartbeat_timeout(self):
+    #    self.heartbeat_timeout_start = datetime.datetime.now()
 
     def client_action(self, message):
         if message.type == 'get':
@@ -67,8 +68,8 @@ class Server:
     def election_timedout(self):
         return (datetime.datetime.now() - self.election_timeout_start).microseconds > self.election_timeout
 
-    def heart_beat_timedout(self):
-        return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > self.heartbeat_timeout
+    #def heart_beat_timedout(self):
+    #    return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > self.heartbeat_timeout
 
     def send_vote(self, vote_request_from_candidate):
         """
@@ -82,7 +83,7 @@ class Server:
 
     def send_vote_request(self):
         if self.voted_for is None:
-            #self.current_term += 1
+
             # Send a vote request message to all other followers
             vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
             json_message = vote.create_vote_request_message(self.id, self.current_term)
@@ -103,12 +104,12 @@ class Server:
         else:
             self.votes_recieved += 1
 
-    def send_heartbeat(self):
-        if self.heart_beat_timedout():
-            message = Message.create_heart_beat_message(self.id, self.current_term)
-            self.reset_heartbeat_timeout()
-            self.send(message)
+    #def send_heartbeat(self):
+    #    if self.heart_beat_timedout():
+    #        message = Message.create_heart_beat_message(self.id, self.current_term)
+    #        self.reset_heartbeat_timeout()
+    #        self.send(message)
 
     def change_to_leader(self):
         self.node_state = "L"
-        self.send_heartbeat()
+    #    self.send_heartbeat()

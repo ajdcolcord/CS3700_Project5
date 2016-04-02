@@ -13,11 +13,9 @@ SERVER = Server(my_id, replica_ids)
 
 while True:
 
-    if SERVER.node_state == "L":
-        SERVER.send_heartbeat()
-    if SERVER.node_state == "F":
-        if SERVER.election_timedout():
-            SERVER.initiate_election()
+    #if SERVER.node_state == "L":
+    #    SERVER.send_heartbeat()
+
 
 
     print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
@@ -77,10 +75,14 @@ while True:
             if msg['type'] == 'heartbeat':
                 SERVER.get_new_election_timeout()
 
+
             if msg['type'] == 'voteRequest':
                 print str(SERVER.id) + "RECEIVED VOTE REQUEST"
                 vote_req_message = Message.create_message_from_json(msg)
                 SERVER.send_vote(vote_req_message)
+
+            # if SERVER.election_timedout():
+            #     SERVER.initiate_election()
 
 
         # Handle noop messages. This may be removed from your final implementation
