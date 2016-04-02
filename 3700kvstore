@@ -15,7 +15,7 @@ while True:
 
     if SERVER.node_state == "L":
         print str(SERVER.id) + " LEADER"
-    #    SERVER.send_heartbeat()
+        SERVER.send_heartbeat()
 
 
 
@@ -44,7 +44,7 @@ while True:
 
                 SERVER.client_action(message)
                 #SERVER.send_heartbeat()
-                
+
 
         # if NODE_STATE == "C": - run candidate directions
         #    - check election_timeout:

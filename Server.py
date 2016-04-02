@@ -26,8 +26,8 @@ class Server:
         self.current_term += 1
         self.voted_for = None
 
-    #def reset_heartbeat_timeout(self):
-    #    self.heartbeat_timeout_start = datetime.datetime.now()
+    def reset_heartbeat_timeout(self):
+       self.heartbeat_timeout_start = datetime.datetime.now()
 
     def client_action(self, message):
         if message.type == 'get':
@@ -68,8 +68,8 @@ class Server:
     def election_timedout(self):
         return (datetime.datetime.now() - self.election_timeout_start).microseconds > self.election_timeout
 
-    #def heart_beat_timedout(self):
-    #    return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > self.heartbeat_timeout
+    def heart_beat_timedout(self):
+        return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > self.heartbeat_timeout
 
     def send_vote(self, vote_request_from_candidate):
         """
@@ -104,11 +104,11 @@ class Server:
         else:
             self.votes_recieved += 1
 
-    #def send_heartbeat(self):
-    #    if self.heart_beat_timedout():
-    #        message = Message.create_heart_beat_message(self.id, self.current_term)
-    #        self.reset_heartbeat_timeout()
-    #        self.send(message)
+    def send_heartbeat(self):
+       if self.heart_beat_timedout():
+           message = Message.create_heart_beat_message(self.id, self.current_term)
+           self.reset_heartbeat_timeout()
+           self.send(message)
 
     def change_to_leader(self):
         self.node_state = "L"
