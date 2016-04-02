@@ -15,10 +15,6 @@ while True:
 
     if SERVER.node_state == "L":
         SERVER.send_heartbeat()
-    elif SERVER.node_state == "F":
-        if SERVER.election_timedout():
-            SERVER.initiate_election()
-
 
     print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
 
@@ -73,7 +69,8 @@ while True:
                 print str(SERVER.id) + "RECEIVED VOTE REQUEST"
                 vote_req_message = Message.create_message_from_json(msg)
                 SERVER.send_vote(vote_req_message)
-
+            elif SERVER.election_timedout():
+                SERVER.initiate_election()
 
 
         # Handle noop messages. This may be removed from your final implementation
