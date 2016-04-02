@@ -250,6 +250,7 @@ while True:
         #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
         if NODE_STATE == "C":
             if msg['type'] =='vote':
+                print str(my_id) + ": Got Vote-------------"
 
                 message = Message.create_message_from_json(msg)
                 receive_vote(message)
