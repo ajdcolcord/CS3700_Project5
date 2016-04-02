@@ -13,7 +13,8 @@ SERVER = Server(my_id, replica_ids)
 
 while True:
 
-    #if SERVER.node_state == "L":
+    if SERVER.node_state == "L":
+        print str(SERVER.id) + " LEADER"
     #    SERVER.send_heartbeat()
 
 
