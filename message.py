@@ -13,10 +13,10 @@ class Message:
     @staticmethod
     def create_message_from_json(json):
         try:
-            print "JSON MESSAGE: " + str(json)
-            print "EACH FIELD: " + str(json['src']) + str(json['dst']) + str(json['leader']) + str(json['type']) + str(json['MID'])
+            #print "JSON MESSAGE: " + str(json)
+            #print "EACH FIELD: " + str(json['src']) + str(json['dst']) + str(json['leader']) + str(json['type']) + str(json['MID'])
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
-            print newMessage
+            #print newMessage
 
 
             if json.get('key'):

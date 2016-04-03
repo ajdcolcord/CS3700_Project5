@@ -14,7 +14,7 @@ SERVER = Server(my_id, replica_ids)
 while True:
 
     if SERVER.node_state == "L":
-        print str(SERVER.id) + " LEADER"
+        #print str(SERVER.id) + " LEADER"
         SERVER.send_heartbeat()
 
 
@@ -24,7 +24,7 @@ while True:
     ready = select.select([SERVER.sock], [], [], 0.1)[0]
 
     if SERVER.sock in ready:
-        print str(SERVER.id) + ": Ready"
+        #print str(SERVER.id) + ": Ready"
         msg_raw = SERVER.sock.recv(32768)
 
         if len(msg_raw) == 0:
@@ -51,9 +51,10 @@ while True:
         #           if election_timedut:...
         #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
         if SERVER.node_state == "C":
-            print str(SERVER.id) + ": Message: " + str(msg)
+            #print str(SERVER.id) + ": Message: " + str(msg)
 
             if msg['type'] == 'heartbeat':
+                print str(SERVER.id) + "got heartbeat"
                 SERVER.get_new_election_timeout()
                 SERVER.node_state = "F"
                 SERVER.voted_for = None
@@ -72,9 +73,11 @@ while True:
         #           -if timedout, request election
         #           -else: continue (listen for messages from leader)
         if SERVER.node_state == "F":
-            print str(SERVER.id) + " FOLLOWER GOT " + str(msg)
+            # print str(SERVER.id) + " FOLLOWER GOT " + str(msg)
 
             if msg['type'] == 'heartbeat':
+                print str(SERVER.id) + "got heartbeat"
+
                 SERVER.get_new_election_timeout()
 
 
@@ -84,7 +87,9 @@ while True:
                 SERVER.send_vote(vote_req_message)
 
             if SERVER.election_timedout():
-                 SERVER.initiate_election()
+                print str(SERVER.id) + "election_timedout"
+
+                SERVER.initiate_election()
 
 
         # Handle noop messages. This may be removed from your final implementation

@@ -55,7 +55,7 @@ class Server:
         self.key_value_store[key] = value
 
     def send(self, json_message):
-        print str(self.id) + ": sending"
+        #print str(self.id) + ": sending"
 
         try:
             self.sock.send(json.dumps(json_message) + '\n')
