@@ -30,7 +30,7 @@ class Message:
                 print "added value: " + str(newMessage.value)
 
             if json.get('term'):
-                print 'adding term'
+                print 'adding term to message'
                 newMessage.term = json['term']
 
 

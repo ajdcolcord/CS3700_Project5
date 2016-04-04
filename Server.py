@@ -94,12 +94,14 @@ class Server:
 
     def initiate_election(self):
         self.current_term += 1
+        print "INCREMENTED TERM : " + str(self.current_term)
         self.get_new_election_timeout()
         self.node_state = "C"
         self.send_vote_request()
 
     def receive_vote(self, message):
         # if terms are equal, and src has not voted for me yet
+        print "RECEIVED: that_term=" + str(message.term) + " Candidate_term=" + str(self.current_term) + " VOTED_FOR_ME = " + str(self.voted_for_me)
         if message.term == self.current_term and message.src not in self.voted_for_me:
             self.voted_for_me.append(message.src)
         if len(self.voted_for_me) >= self.quorum_size:

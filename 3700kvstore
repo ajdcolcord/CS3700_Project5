@@ -74,7 +74,7 @@ while True:
             #     SERVER.voted_for = None
 
             if msg['type'] == 'vote':
-                print str(SERVER.id) + ": Got Vote-------------"
+                print str(SERVER.id) + ": Got Vote Message----------"
 
                 message = Message.create_message_from_json(msg)
                 SERVER.receive_vote(message)
