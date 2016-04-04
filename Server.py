@@ -24,8 +24,7 @@ class Server:
     def get_new_election_timeout(self):
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.voted_for = None
-        self.voted_for_me = []
+
 
     def reset_heartbeat_timeout(self):
        self.heartbeat_timeout_start = datetime.datetime.now()
@@ -93,6 +92,8 @@ class Server:
             self.send(json_message)
 
     def initiate_election(self):
+        self.voted_for = None
+        self.voted_for_me = []
         self.current_term += 1
         print "INCREMENTED TERM : " + str(self.current_term)
         self.get_new_election_timeout()
@@ -104,6 +105,8 @@ class Server:
         print "RECEIVED: that_term=" + str(message.term) + " Candidate_term=" + str(self.current_term) + " VOTED_FOR_ME = " + str(self.voted_for_me)
         if message.term == self.current_term and message.src not in self.voted_for_me:
             self.voted_for_me.append(message.src)
+            print "ADDED TO VOTED_FOR_ME: " + str(self.voted_for_me)
+            self.get_new_election_timeout()
         if len(self.voted_for_me) >= self.quorum_size:
             self.change_to_leader()
 
