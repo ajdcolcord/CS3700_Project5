@@ -101,7 +101,7 @@ while True:
                 vote_req_message = Message.create_message_from_json(msg)
                 if vote_req_message.term > SERVER.current_term:
                     if SERVER.voted_for is None or SERVER.voted_for == vote_req_message.src:
-                        # TODO: and candidate’s log is at least as up - to - date as receiver’s log, grant vote
+                        # TODO: and canddiates log is at least up to date as receiver's log, grand vote
                         SERVER.send_vote(vote_req_message)
                     SERVER.get_new_election_timeout()
 
