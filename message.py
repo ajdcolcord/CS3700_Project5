@@ -85,8 +85,8 @@ class Message:
                 'type': 'vote', 'MID': message.message_id, 'term': message.term}
 
     def create_vote_request_message(self, src, term):
-        return {'src': src, 'dst': "FFFF", 'leader': message.leader,
-                'type': "voteRequest", 'MID': message.message_id, 'term': term}
+        return {'src': src, 'dst': "FFFF", 'leader': "none",
+                'type': "voteRequest", 'MID': 1234567890, 'term': term}
 
     @staticmethod
     def create_heart_beat_message(src, term):
