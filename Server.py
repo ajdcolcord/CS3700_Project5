@@ -82,6 +82,7 @@ class Server:
             self.send(json_message)
 
     def send_vote_request(self):
+        print str(self.id) + "SEND_VOTE_REQUEST"
         if self.voted_for is None:
             # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
 
@@ -92,6 +93,7 @@ class Server:
             self.send(json_message)
 
     def initiate_election(self):
+        print str(self.id) + "INITIATE_ELECTION"
         self.voted_for = None
         self.voted_for_me = []
         self.current_term += 1
@@ -105,7 +107,7 @@ class Server:
         print "RECEIVED: that_term=" + str(message.term) + " Candidate_term=" + str(self.current_term) + " VOTED_FOR_ME = " + str(self.voted_for_me)
         if message.term == self.current_term and message.src not in self.voted_for_me:
             self.voted_for_me.append(message.src)
-            print "ADDED TO VOTED_FOR_ME: " + str(self.voted_for_me)
+            print "ADDED TO VOTED_FOR_ME: " + str(len(self.voted_for_me))
             self.get_new_election_timeout()
         if len(self.voted_for_me) >= self.quorum_size:
             self.change_to_leader()
