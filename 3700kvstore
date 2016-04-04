@@ -6,18 +6,32 @@ from Server import Server
 
 my_id = sys.argv[1]
 
+#Todo: set this / 2 + 1 to SERVER.quorum size
 replica_ids = sys.argv[2:]
 
 SERVER = Server(my_id, replica_ids)
 
 
 while True:
+    if SERVER.election_timedout():
+        print str(SERVER.id) + ": election_timedout"
+
+        SERVER.initiate_election()
 
     if SERVER.node_state == "L":
         #print str(SERVER.id) + " LEADER"
-        SERVER.send_heartbeat()
+        #SERVER.send_heartbeat()
+        pass
 
+    if SERVER.node_state == "F":
+        pass
 
+    if SERVER.node_state == "C":
+        # #TODO: if received heartbeat, if heartbeat term >= SERVER.term, become follower and ACK
+        # if SERVER.election_timedout():
+        #     print str(SERVER.id) + ": candidate ELECTION TIMEDOUT _ RESTART ELECTION"
+        #     SERVER.initiate_election()
+        pass
 
     print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
 
@@ -53,19 +67,19 @@ while True:
         if SERVER.node_state == "C":
             #print str(SERVER.id) + ": Message: " + str(msg)
 
-            if msg['type'] == 'heartbeat':
-                print str(SERVER.id) + "got heartbeat"
-                SERVER.get_new_election_timeout()
-                SERVER.node_state = "F"
-                SERVER.voted_for = None
+            # if msg['type'] == 'heartbeat':
+            #     print str(SERVER.id) + ": got heartbeat"
+            #     SERVER.get_new_election_timeout()
+            #     SERVER.node_state = "F"
+            #     SERVER.voted_for = None
 
             if msg['type'] == 'vote':
                 print str(SERVER.id) + ": Got Vote-------------"
 
                 message = Message.create_message_from_json(msg)
                 SERVER.receive_vote(message)
-                if SERVER.votes_recieved >= SERVER.quorum_size:
-                    SERVER.change_to_leader()
+                # if SERVER.votes_recieved >= SERVER.quorum_size:
+                #     SERVER.change_to_leader()
 
 
         # if NODE_STATE == "F": - run follower directions
@@ -76,20 +90,21 @@ while True:
             # print str(SERVER.id) + " FOLLOWER GOT " + str(msg)
 
             if msg['type'] == 'heartbeat':
-                print str(SERVER.id) + "got heartbeat"
+                print str(SERVER.id) + ": got heartbeat"
 
                 SERVER.get_new_election_timeout()
 
 
             if msg['type'] == 'voteRequest':
-                print str(SERVER.id) + "RECEIVED VOTE REQUEST"
+                print str(SERVER.id) + ": RECEIVED VOTE REQUEST"
+
                 vote_req_message = Message.create_message_from_json(msg)
-                SERVER.send_vote(vote_req_message)
+                if vote_req_message.term > SERVER.current_term:
+                    if SERVER.voted_for is None or SERVER.voted_for == vote_req_message.src:
+                        # TODO: and candidate’s log is at least as up - to - date as receiver’s log, grant vote
+                        SERVER.send_vote(vote_req_message)
+                    SERVER.get_new_election_timeout()
 
-            if SERVER.election_timedout():
-                print str(SERVER.id) + "election_timedout"
-
-                SERVER.initiate_election()
 
 
         # Handle noop messages. This may be removed from your final implementation

@@ -17,14 +17,15 @@ class Server:
         self.quorum_size = 3
         self.leader_id = 0
         self.node_state = "F"
+        self.voted_for_me = []
 
         self.key_value_store = {}
 
     def get_new_election_timeout(self):
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.current_term += 1
         self.voted_for = None
+        self.voted_for_me = []
 
     def reset_heartbeat_timeout(self):
        self.heartbeat_timeout_start = datetime.datetime.now()
@@ -83,6 +84,7 @@ class Server:
 
     def send_vote_request(self):
         if self.voted_for is None:
+            # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
 
             # Send a vote request message to all other followers
             vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
@@ -91,18 +93,25 @@ class Server:
             self.send(json_message)
 
     def initiate_election(self):
+        self.current_term += 1
         self.get_new_election_timeout()
         self.node_state = "C"
         self.send_vote_request()
 
     def receive_vote(self, message):
-        self.request_vote_RPC(message.term, message.src, 1, 1) #, msg['lastLogIndex'], msg['lastLogTerm'])
+        # if terms are equal, and src has not voted for me yet
+        if message.term == self.current_term and message.src not in self.voted_for_me:
+            self.voted_for_me.append(message.src)
+        if len(self.voted_for_me) >= self.quorum_size:
+            self.change_to_leader()
 
-    def request_vote_RPC(self, term, candidateId, lastLogIndex, lastLogTerm):
-        if term < self.current_term:
-            return False  # reply false
-        else:
-            self.votes_recieved += 1
+            #self.request_vote_RPC(message.term, message.src, 1, 1) #, msg['lastLogIndex'], msg['lastLogTerm'])
+
+    # def request_vote_RPC(self, term, candidateId, lastLogIndex, lastLogTerm):
+    #     if term < self.current_term:
+    #         return False  # reply false
+    #     else:
+    #         self.votes_recieved += 1
 
     def send_heartbeat(self):
        if self.heart_beat_timedout():
