@@ -115,7 +115,7 @@ class Server:
         if message.term == self.current_term and message.src not in self.voted_for_me:
             self.voted_for_me.append(message.src)
             print "ADDED TO VOTED_FOR_ME: " + str(len(self.voted_for_me))
-            self.get_new_election_timeout()
+            #self.get_new_election_timeout()
         if len(self.voted_for_me) >= self.quorum_size:
             self.change_to_leader()
 
