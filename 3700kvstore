@@ -27,7 +27,8 @@ while True:
             SERVER.send_heartbeat()
 
     if SERVER.node_state == "F":
-        pass
+        print 'hey there'
+
 
     if SERVER.node_state == "C":
         # #TODO: if received heartbeat, if heartbeat term >= SERVER.term, become follower and ACK
@@ -62,7 +63,6 @@ while True:
                 message = Message.create_message_from_json(msg)
                 SERVER.get_new_election_timeout()
                 #TODO: commit log entry yet?????
-                pass
 
             if msg['type'] == 'heartbeat':
 
