@@ -93,4 +93,15 @@ class Message:
         return {'src': src, 'dst': "FFFF", 'leader': src,
                 'type': 'heartbeat', 'MID': 1234567890, 'term': term}
 
+    def create_heart_beat_ACK_message(self, replica_id):
+        message = self.create_response_message('heartbeatACK')
+        return {'src': replica_id, 'dst': message.dst, 'leader': message.dst,
+                'type': 'heartbeatACK', 'MID': 1234567890, 'term': message.term}
+
+    def create_redirect_message(self, leader_id):
+        message = self.create_response_message('redirect')
+        return {'src': message.src, 'dst': message.dst, 'leader': leader_id,
+                'type': 'redirect', 'MID': message.message_id}
+
+
 

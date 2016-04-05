@@ -19,9 +19,8 @@ while True:
         SERVER.initiate_election()
 
     if SERVER.node_state == "L":
-        #print str(SERVER.id) + " LEADER"
-        #SERVER.send_heartbeat()
-        pass
+        print str(SERVER.id) + " LEADER"
+        SERVER.send_heartbeat()
 
     if SERVER.node_state == "F":
         pass
@@ -55,9 +54,10 @@ while True:
             if msg['type'] in ['get', 'put']:
                 message = Message.create_message_from_json(msg)
 
-
-                SERVER.client_action(message)
-                #SERVER.send_heartbeat()
+            elif msg['type'] == 'heartbeatACK':
+                message = Message.create_message_from_json(msg)
+                #TODO: commit log entry yet?????
+                pass
 
 
         # if NODE_STATE == "C": - run candidate directions
@@ -75,11 +75,15 @@ while True:
 
             if msg['type'] == 'vote':
                 print str(SERVER.id) + ": Got Vote Message----------"
-
                 message = Message.create_message_from_json(msg)
                 SERVER.receive_vote(message)
-                # if SERVER.votes_recieved >= SERVER.quorum_size:
-                #     SERVER.change_to_leader()
+
+            if msg['type'] == 'heartbeat':
+                message = Message.create_message_from_json(msg)
+
+                if message.term >= SERVER.current_term:
+                    SERVER.become_follower(message.leader)
+
 
 
         # if NODE_STATE == "F": - run follower directions
@@ -90,10 +94,13 @@ while True:
             # print str(SERVER.id) + " FOLLOWER GOT " + str(msg)
 
             if msg['type'] == 'heartbeat':
-                print str(SERVER.id) + ": got heartbeat"
-
-                SERVER.get_new_election_timeout()
-
+                if msg['term'] == SERVER.current_term:
+                    print str(SERVER.id) + ": got heartbeat"
+                    heart_beat = Message.create_message_from_json(msg)
+                    SERVER.leader_id = heart_beat.leader
+                    SERVER.get_new_election_timeout()
+                    hb_ack = heart_beat.create_heart_beat_ACK_message(SERVER.id)
+                    SERVER.send(hb_ack)
 
             if msg['type'] == 'voteRequest':
                 print str(SERVER.id) + ": RECEIVED VOTE REQUEST"
@@ -104,6 +111,12 @@ while True:
                         # TODO: and canddiates log is at least up to date as receiver's log, grand vote
                         SERVER.send_vote(vote_req_message)
                     SERVER.get_new_election_timeout()
+
+            if msg['type'] in ['get', 'put']:
+                message = Message.create_message_from_json(msg)
+                redirect_message = message.create_redirect_message(SERVER.leader_id)
+
+                SERVER.send(redirect_message)
 
 
 

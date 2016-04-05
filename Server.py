@@ -9,7 +9,7 @@ class Server:
         self.replica_ids = replica_ids
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.heartbeat_timeout = 100
+        self.heartbeat_timeout = 75
         self.heartbeat_timeout_start = datetime.datetime.now()
         self.current_term = 0
         self.voted_for = None
@@ -24,7 +24,6 @@ class Server:
     def get_new_election_timeout(self):
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-
 
     def reset_heartbeat_timeout(self):
        self.heartbeat_timeout_start = datetime.datetime.now()
@@ -92,6 +91,14 @@ class Server:
             self.voted_for = self.id
             self.send(json_message)
 
+    def become_follower(self, leader_id):
+        self.node_state = "F"
+        self.get_new_election_timeout()
+        self.voted_for_me = []
+        self.voted_for = None
+        self.leader_id = leader_id
+
+
     def initiate_election(self):
         print str(self.id) + "INITIATE_ELECTION"
         self.voted_for = None
@@ -128,4 +135,5 @@ class Server:
 
     def change_to_leader(self):
         self.node_state = "L"
-    #    self.send_heartbeat()
+        self.leader_id = self.id
+        self.send_heartbeat()
