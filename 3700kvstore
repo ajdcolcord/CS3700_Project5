@@ -13,6 +13,7 @@ replica_ids = sys.argv[2:]
 SERVER = Server(my_id, replica_ids)
 
 time.sleep(0.2)
+SERVER.get_new_election_timeout()
 
 while True:
     if SERVER.election_timedout():
