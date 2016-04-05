@@ -59,6 +59,13 @@ while True:
                 #TODO: commit log entry yet?????
                 pass
 
+            if msg['type'] == 'heartbeat':
+
+                message = Message.create_message_from_json(msg)
+
+                if message.term > SERVER.current_term:
+                    SERVER.become_follower(message.leader)
+
 
         # if NODE_STATE == "C": - run candidate directions
         #    - check election_timeout:
