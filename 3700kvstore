@@ -11,6 +11,7 @@ replica_ids = sys.argv[2:]
 
 SERVER = Server(my_id, replica_ids)
 
+sleep(0.2)
 
 while True:
     if SERVER.election_timedout():
