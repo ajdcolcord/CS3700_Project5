@@ -34,7 +34,7 @@ while True:
         # if SERVER.election_timedout():
         #     print str(SERVER.id) + ": candidate ELECTION TIMEDOUT _ RESTART ELECTION"
         #     SERVER.initiate_election()
-        pass
+        print 'yo'
 
     print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
 
