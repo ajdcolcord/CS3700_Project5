@@ -91,9 +91,11 @@ while True:
                 SERVER.receive_vote(message)
 
             if msg['type'] == 'heartbeat':
+                print str(SERVER.id) + "got ~~~HEARTBEAT~~~"
                 message = Message.create_message_from_json(msg)
 
                 if message.term >= SERVER.current_term:
+                    SERVER.current_term = message.term
                     SERVER.become_follower(message.leader)
 
 
@@ -106,9 +108,10 @@ while True:
             # print str(SERVER.id) + " FOLLOWER GOT " + str(msg)
 
             if msg['type'] == 'heartbeat':
-                if msg['term'] == SERVER.current_term:
-                    print str(SERVER.id) + ": got heartbeat"
+                if msg['term'] >= SERVER.current_term:
+                    print str(SERVER.id) + "got ~~~HEARTBEAT~~~"
                     heart_beat = Message.create_message_from_json(msg)
+                    SERVER.current_term = heart_beat.term
                     SERVER.leader_id = heart_beat.leader
                     SERVER.get_new_election_timeout()
                     hb_ack = heart_beat.create_heart_beat_ACK_message(SERVER.id)
