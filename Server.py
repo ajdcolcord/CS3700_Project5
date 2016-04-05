@@ -111,6 +111,7 @@ class Server:
 
     def receive_vote(self, message):
         # if terms are equal, and src has not voted for me yet
+        print str(self.id) + " : receiving vote--- messageterm=" + str(message.term) + " myterm=" + str(self.current_term) + "votefrom: " + str(message.src) + " voted4me=" + str(self.voted_for_me)
         if message.term == self.current_term and message.src not in self.voted_for_me:
             self.voted_for_me.append(message.src)
             print "ADDED TO VOTED_FOR_ME: " + str(len(self.voted_for_me))
@@ -130,11 +131,10 @@ class Server:
     #         self.votes_recieved += 1
 
     def send_heartbeat(self):
-       if self.heart_beat_timedout():
-           print str(self.id) + "~~~HEARTBEAT~~~"
-           message = Message.create_heart_beat_message(self.id, self.current_term)
-           self.reset_heartbeat_timeout()
-           self.send(message)
+       print str(self.id) + "~~~HEARTBEAT~~~"
+       message = Message.create_heart_beat_message(self.id, self.current_term)
+       self.reset_heartbeat_timeout()
+       self.send(message)
 
     def change_to_leader(self):
         print str(self.id) + "CHANGED TO LEADER!!!!!!"
