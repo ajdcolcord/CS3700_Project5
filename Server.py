@@ -136,6 +136,7 @@ class Server:
        print str(self.id) + "~~~HEARTBEAT~~~"
        message = Message.create_heart_beat_message(self.id, self.current_term)
        self.reset_heartbeat_timeout()
+       self.get_new_election_timeout()
        self.send(message)
 
     def change_to_leader(self):
