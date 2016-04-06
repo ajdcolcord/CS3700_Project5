@@ -85,7 +85,7 @@ class Message:
                 'type': 'vote', 'MID': message.message_id, 'term': message.term}
 
     def create_vote_request_message(self, src, term):
-        return {'src': src, 'dst': "FFFF", 'leader': "FFFF",
+        return {'src': src, 'dst': "FFFF", 'leader': src,
                 'type': "voteRequest", 'MID': 1234567890, 'term': term}
 
     @staticmethod
