@@ -8,7 +8,7 @@ class Server:
         self.sock.connect(id)
         self.replica_ids = replica_ids
         self.election_timeout = random.randint(150, 300)
-        self.election_timeout_start = int(str(datetime.datetime.now())[:3])
+        self.election_timeout_start = datetime.datetime.now()
         self.heartbeat_timeout = 75
         self.heartbeat_timeout_start = datetime.datetime.now()
         self.current_term = 0
@@ -23,10 +23,10 @@ class Server:
 
     def get_new_election_timeout(self):
         self.election_timeout = random.randint(150, 300)
-        self.election_timeout_start = int(str(datetime.datetime.now())[:3])
+        self.election_timeout_start = datetime.datetime.now()
 
     def reset_heartbeat_timeout(self):
-       self.heartbeat_timeout_start = int(str(datetime.datetime.now())[:3])
+       self.heartbeat_timeout_start = datetime.datetime.now()
 
     def client_action(self, message):
         if message.type == 'get':
@@ -65,10 +65,10 @@ class Server:
         return self.leader_id == self.id
 
     def election_timedout(self):
-        return (int(str(datetime.datetime.now())[:3]) - self.election_timeout_start) > self.election_timeout
+        return (datetime.datetime.now() - self.election_timeout_start) > (self.election_timeout * 1000)
 
     def heart_beat_timedout(self):
-        return (int(str(datetime.datetime.now())[:3]) - self.heartbeat_timeout_start) > self.heartbeat_timeout
+        return (datetime.datetime.now() - self.heartbeat_timeout_start) > (self.heartbeat_timeout * 1000)
 
     def send_vote(self, vote_request_from_candidate):
         """
