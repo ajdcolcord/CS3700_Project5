@@ -74,7 +74,7 @@ class Server:
         """
         When a Follower, send a vote back to the requesting Candidate
         """
-        print str(self.id) + ": SENDING VOTE~!~!~!~!~!~ to : " + str(vote_request_from_candidate.src) + " requestterm = " + str(vote_request_from_candidate.term)
+        print str(self.id) + ": SENDING VOTE~!~!~!~!~!~ to : " + str(vote_request_from_candidate.src) + " requestterm = " + str(vote_request_from_candidate.term) + str(datetime.datetime.now())
         if self.voted_for is None:
             self.current_term = vote_request_from_candidate.term
             self.get_new_election_timeout()
@@ -83,7 +83,7 @@ class Server:
             self.send(json_message)
 
     def send_vote_request(self):
-        print str(self.id) + "SEND_VOTE_REQUEST"
+        print str(self.id) + ": SEND_VOTE_REQUEST" + str(datetime.datetime.now())
         if self.voted_for is None:
             # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
 
@@ -113,7 +113,7 @@ class Server:
 
     def receive_vote(self, message):
         # if terms are equal, and src has not voted for me yet
-        print str(self.id) + " : receiving vote--- messageterm=" + str(message.term) + " myterm=" + str(self.current_term) + "votefrom: " + str(message.src) + " voted4me=" + str(self.voted_for_me)
+        print str(self.id) + " : receiving vote--- messageterm=" + str(message.term) + " myterm=" + str(self.current_term) + "votefrom: " + str(message.src) + " voted4me=" + str(self.voted_for_me) + " time=" + str(datetime.datetime.now())
         if message.term == self.current_term and message.src not in self.voted_for_me:
             self.voted_for_me.append(message.src)
             print "ADDED TO VOTED_FOR_ME: " + str(len(self.voted_for_me))
