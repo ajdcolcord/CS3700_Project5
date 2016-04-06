@@ -45,8 +45,8 @@ while True:
         #print str(SERVER.id) + ": Ready"
         msg_raw = SERVER.sock.recv(32768)
 
-        if len(msg_raw) == 0:
-            continue
+        #if len(msg_raw) == 0:
+        #    continue
 
         msg = json.loads(msg_raw)
 
