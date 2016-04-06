@@ -23,7 +23,7 @@ while True:
 
     if SERVER.node_state == "L":
         print str(SERVER.id) + " LEADER"
-        if self.heart_beat_timedout():
+        if SERVER.heart_beat_timedout():
             SERVER.send_heartbeat()
 
     #if SERVER.node_state == "F":
