@@ -65,10 +65,10 @@ class Server:
         return self.leader_id == self.id
 
     def election_timedout(self):
-        return (datetime.datetime.now() - self.election_timeout_start).microseconds > self.election_timeout
+        return int(str((datetime.datetime.now() - self.election_timeout_start).microseconds)[:3]) > self.election_timeout
 
     def heart_beat_timedout(self):
-        return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > self.heartbeat_timeout
+        return int(str((datetime.datetime.now() - self.heartbeat_timeout_start).microseconds)[:3]) > self.heartbeat_timeout
 
     def send_vote(self, vote_request_from_candidate):
         """
