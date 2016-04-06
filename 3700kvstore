@@ -39,7 +39,7 @@ while True:
 
     print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
 
-    ready = select.select([SERVER.sock], [], [], 0.01)[0]
+    ready = select.select([SERVER.sock], [], [], 0.1)[0]
 
     if SERVER.sock in ready:
         #print str(SERVER.id) + ": Ready"
