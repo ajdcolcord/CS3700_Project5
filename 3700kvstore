@@ -72,19 +72,14 @@ while True:
                 if message.term > SERVER.current_term:
                     SERVER.become_follower(message.leader)
 
+            if msg['type'] == 'voteRequest':
+                message = Message.create_message_from_json(msg)
+                if message.term > SERVER.current_term:
+                    SERVER.become_follower(msg['leader'])
 
-        # if NODE_STATE == "C": - run candidate directions
-        #    - check election_timeout:
-        #           if election_timedut:...
-        #           else: continue (listen for votes, if received enough votes, determine the leader, etc.)
+
         if SERVER.node_state == "C":
-            #print str(SERVER.id) + ": Message: " + str(msg)
 
-            # if msg['type'] == 'heartbeat':
-            #     print str(SERVER.id) + ": got heartbeat"
-            #     SERVER.get_new_election_timeout()
-            #     SERVER.node_state = "F"
-            #     SERVER.voted_for = None
 
             if msg['type'] == 'vote':
                 print str(SERVER.id) + ": Got Vote Message----------"
@@ -93,16 +88,16 @@ while True:
 
             if msg['type'] == 'heartbeat':
                 print str(SERVER.id) + "got ~~~HEARTBEAT~~~"
-                message = Message.create_message_from_json(msg)
+                heart_beat = Message.create_message_from_json(msg)
 
-                if message.term >= SERVER.current_term:
-                    SERVER.current_term = message.term
-                    SERVER.become_follower(message.leader)
+                if heart_beat.term >= SERVER.current_term:
+                    SERVER.current_term = heart_beat.term
+                    SERVER.become_follower(heart_beat.leader)
 
             if msg['type'] == 'voteRequest':
                 message = Message.create_message_from_json(msg)
                 if message.term > SERVER.current_term:
-                    SERVER.become_follower(SERVER.leader_id)
+                    SERVER.become_follower(msg['leader'])
 
 
 

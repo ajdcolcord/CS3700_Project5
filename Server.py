@@ -19,7 +19,16 @@ class Server:
         self.node_state = "F"
         self.voted_for_me = []
 
+        self.commit_index = 0
+        self.last_applied = 0
+        self.next_index = 0
+        self.match_index = 0
+        self.log = []
+
         self.key_value_store = {}
+
+    def add_entry(self, command, term):
+        self.log.append((command, term))
 
     def get_new_election_timeout(self):
         self.election_timeout = random.randint(150, 300)
