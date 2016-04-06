@@ -58,6 +58,7 @@ while True:
             # For now, ignore get() and put() from clients
             if msg['type'] in ['get', 'put']:
                 message = Message.create_message_from_json(msg)
+                client_action(message)
 
             elif msg['type'] == 'heartbeatACK':
                 print "~~~~~~~HEARTBEAT_ACK++++++"
