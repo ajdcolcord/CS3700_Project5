@@ -74,7 +74,7 @@ class Server:
         """
         When a Follower, send a vote back to the requesting Candidate
         """
-        print str(self.id) + ": SENDING VOTE~!~!~!~!~!~ to : " + str(vote_request_from_candidate.src)
+        print str(self.id) + ": SENDING VOTE~!~!~!~!~!~ to : " + str(vote_request_from_candidate.src) + " requestterm = " + str(vote_request_from_candidate.term)
         if self.voted_for is None:
             self.current_term = vote_request_from_candidate.term
             self.get_new_election_timeout()
