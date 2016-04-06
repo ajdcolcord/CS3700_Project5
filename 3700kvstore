@@ -26,16 +26,16 @@ while True:
         if self.heart_beat_timedout():
             SERVER.send_heartbeat()
 
-    if SERVER.node_state == "F":
-        print 'hey there'
+    #if SERVER.node_state == "F":
 
 
-    if SERVER.node_state == "C":
+
+    #if SERVER.node_state == "C":
         # #TODO: if received heartbeat, if heartbeat term >= SERVER.term, become follower and ACK
         # if SERVER.election_timedout():
         #     print str(SERVER.id) + ": candidate ELECTION TIMEDOUT _ RESTART ELECTION"
         #     SERVER.initiate_election()
-        print 'yo'
+        #print 'yo'
 
     print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
 
@@ -126,7 +126,7 @@ while True:
                     SERVER.send(hb_ack)
 
             if msg['type'] == 'voteRequest':
-                print str(SERVER.id) + ": RECEIVED VOTE REQUEST"
+                print str(SERVER.id) + ": RECEIVED VOTE REQUEST from: " + str(msg['src']) + " time=" + str(datetime.datetime.now())
 
                 vote_req_message = Message.create_message_from_json(msg)
 
