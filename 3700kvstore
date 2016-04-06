@@ -60,6 +60,7 @@ while True:
                 message = Message.create_message_from_json(msg)
 
             elif msg['type'] == 'heartbeatACK':
+                print "~~~~~~~HEARTBEAT_ACK++++++"
                 message = Message.create_message_from_json(msg)
                 SERVER.get_new_election_timeout()
                 #TODO: commit log entry yet?????
