@@ -7,8 +7,7 @@ class Server:
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
         self.sock.connect(id)
         self.replica_ids = replica_ids
-        # self.election_timeout = random.randint(150, 300)
-        self.election_timeout = random.randint(400, 700)
+        self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
         self.heartbeat_timeout = 75
         self.heartbeat_timeout_start = datetime.datetime.now()

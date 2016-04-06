@@ -136,11 +136,11 @@ while True:
                         SERVER.send_vote(vote_req_message)
                         SERVER.get_new_election_timeout()
 
-            if msg['type'] in ['get', 'put']:
-                message = Message.create_message_from_json(msg)
-                redirect_message = message.create_redirect_message(SERVER.leader_id)
-
-                SERVER.send(redirect_message)
+            # if msg['type'] in ['get', 'put']:
+            #     message = Message.create_message_from_json(msg)
+            #     redirect_message = message.create_redirect_message(SERVER.leader_id)
+            #
+            #     SERVER.send(redirect_message)
 
 
 
