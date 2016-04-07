@@ -83,7 +83,7 @@ def candidate_receive_message(msg):
         if message.term > SERVER.current_term:
             SERVER.become_follower(msg['leader'])
 
-def follower_reeive_message(msg):
+def follower_receive_message(msg):
     """
     All Follower Message Receiving
     """
