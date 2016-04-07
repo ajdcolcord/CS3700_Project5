@@ -15,7 +15,7 @@ class Server:
         self.voted_for = None
         self.votes_recieved = 0
         self.quorum_size = 3
-        self.leader_id = 0
+        self.leader_id = "FFFF"
         self.node_state = "F"
         self.voted_for_me = []
 
