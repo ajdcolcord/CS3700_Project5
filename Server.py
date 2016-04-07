@@ -62,14 +62,20 @@ class Server:
         term = self.current_term
 
         prevLogIndex = self.commit_index - 1
+
+
         if prevLogIndex >= 0:
-            prevLogTerm = self.log[prevLogIndex][1]
+           prevLogTerm = self.log[prevLogIndex][1]
         else:
-            prevLogIndex = -1
-            prevLogTerm = 0
+           prevLogIndex = -1
+           prevLogTerm = 0
 
-
-        entries_to_send = self.log[prevLogIndex + 1:]
+        #entries_to_send = []
+        #if prevLogTerm == 0:
+        #    entries_to_send = self.log
+        #else:
+        entries_to_send = self.log[self.commit_index:]
+        
         leaderCommit = self.last_applied
 
 
