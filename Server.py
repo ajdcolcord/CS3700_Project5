@@ -94,7 +94,7 @@ class Server:
 
         #if leader_prev_log_index == -1:
         else:
-            if self.log[leader_prev_log_index]:
+            if len(self.log) >= leader_prev_log_index:
                 #if self.log[self.commit_index][1] == leader_prev_log_term:
                 if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                     self.log = self.log[:leader_prev_log_index] + logEntry['entries']
