@@ -74,7 +74,7 @@ class Server:
 
 
         app_entry = Message.create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, leaderCommit)
-        send(app_entry)
+        self.send(app_entry)
 
     def receive_append_new_entry(self, message):
         logEntry = message['logEntry']
