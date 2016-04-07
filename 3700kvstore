@@ -117,7 +117,7 @@ def follower_receive_message(msg):
 
     if msg['type'] == 'appendEntry':
 
-        receive_append_new_entry(msg)
+        SERVER.receive_append_new_entry(msg)
 
 
 
