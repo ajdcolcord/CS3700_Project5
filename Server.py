@@ -74,8 +74,8 @@ class Server:
         #if prevLogTerm == 0:
         #    entries_to_send = self.log
         #else:
-        entries_to_send = self.log[self.commit_index:]
-        print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
+        entries_to_send = self.log[self.commit_index - 1:]
+        print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index -1)
 
         leaderCommit = self.last_applied
 
