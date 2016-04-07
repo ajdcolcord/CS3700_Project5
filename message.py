@@ -9,6 +9,7 @@ class Message:
         self.key = key
         self.value = value
         self.term = term
+        self.logEntry = None
 
     @staticmethod
     def create_message_from_json(json):
@@ -32,6 +33,10 @@ class Message:
             if json.get('term'):
                 print 'adding term to message'
                 newMessage.term = json['term']
+
+            if json.get('logEntry'):
+                print 'new logEntry'
+                newMessage.logEntry = json.get('logEntry')
 
 
             return newMessage
@@ -92,6 +97,19 @@ class Message:
     def create_heart_beat_message(src, term):
         return {'src': src, 'dst': "FFFF", 'leader': src,
                 'type': 'heartbeat', 'MID': 1234567890, 'term': term}
+
+    @staticmethod
+    def create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries, leaderCommit):
+        return {'src': src,
+                'dst': "FFFF",
+                'leader': src,
+                'type': 'appendEntry',
+                'MID': 1234567890,
+                'term': term,
+                'logEntry': {'prevLogIndex': prevLogIndex,
+                             'prevLogTerm': prevLogTerm,
+                             'entries': entries,
+                             'leaderCommit': leaderCommit}}
 
     def create_heart_beat_ACK_message(self, replica_id):
         message = self.create_response_message('heartbeatACK')

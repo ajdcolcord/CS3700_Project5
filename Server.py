@@ -21,14 +21,21 @@ class Server:
 
         self.commit_index = 0
         self.last_applied = 0
-        self.next_index = 0
-        self.match_index = 0
+        self.match_index = {}
         self.log = []
 
         self.key_value_store = {}
 
+        for replica in replica_ids:
+            self.match_index[replica] = 0
+
+
+
     def add_entry(self, command, term):
         self.log.append((command, term))
+        self.commit_index = len(self.log) # 'increment' our last-committed index
+        self.send_append_new_entry()
+
 
     def get_new_election_timeout(self):
         self.election_timeout = random.randint(150, 300)
@@ -38,16 +45,87 @@ class Server:
        self.heartbeat_timeout_start = datetime.datetime.now()
 
     def client_action(self, message):
+        # TODO: 1) add command (type, values) to log with self.term (uncommitted)
+
         if message.type == 'get':
+            self.add_entry((message.type, (message.key)), self.current_term)
+
             self.get(message)
         elif message.type == 'put':
+            self.add_entry((message.type, (message.key, message.value)), self.current_term)
             self.put(message)
+
+    def send_append_new_entry(self):
+
+        # src, term, prevLogIndex, prevLogTerm, entries, leaderCommit
+        src = self.id
+        term = self.current_term
+
+        prevLogIndex = self.commit_index - 1
+        if prevLogIndex >= 0:
+            prevLogTerm = self.log[prevLogIndex][1]
+        else:
+            prevLogIndex = -1
+            prevLogTerm = 0
+
+
+        entries_to_send = self.log[prevLogIndex + 1:]
+        leaderCommit = self.last_applied
+
+
+        app_entry = create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, leaderCommit)
+        send(app_entry)
+
+    def receive_append_new_entry(self, message):
+        logEntry = message['logEntry']
+        leader_prev_log_index = logEntry['prevLogIndex']
+        leader_prev_log_term = logEntry['prevLogTerm']
+
+        if len(self.log) == 0:
+            self.log = logEntry['entries']
+
+        #if leader_prev_log_index == -1:
+        else:
+            #if self.log[self.commit_index][1] == leader_prev_log_term:
+            if self.log[leader_prev_log_index][1] == leader_prev_log_term:
+                self.log = self.log[:leader_prev_log_index] + logEntry['entries']
+                self.commit_index = len(self.log)
+                # TODO: send ack, add to log
+                reply = {'src': self.id,
+                         'dst': message['src'],
+                         'type': "appendACK",
+                         'follower_last_added': self.commit_index,
+                         'follower_last_committed': self.last_applied}
+                self.send(reply)
+
+            elif self.log[leader_prev_log_index][1] != leader_prev_log_term:
+                # TODO: send fail, do not add to log
+                reply = {'src': self.id,
+                         'dst': message['src'],
+                         'type': "appendACK",
+                         'follower_commit_index': self.commit_index} #,
+                         #'follower_last_applied': self.last_applied}
+                self.send(reply)
+
+
+    def receive_append_entry(self, append_entry_message):
+        if append_entry_message.term < self.term:
+            print ' '
+            # TODO: reply false
+        # if my log doesn't contain an entry contained at prevLogIndex whose term matches prevLogTerm
+        if self.log[append_entry_message.prev_log_index][1] != append_entry_message.prev_log_term:
+            print ' '
+            # TODO: reply false
+
+        if self.log[append_entry_message.commit_index][1] != append_entry_message.term:
+            self.log = self.log[:append_entry_message.commit_index - 1]
 
     def get(self, message):
         print str(self.id) + ": Get"
         if message.key not in self.key_value_store:
             self.send(message.create_fail_message())
         else:
+
             self.send(message.create_ok_get_message(self.key_value_store[message.key]))
 
     def put(self, message):
@@ -154,4 +232,6 @@ class Server:
         self.node_state = "L"
         self.leader_id = self.id
         self.send_heartbeat()
+
+
 
