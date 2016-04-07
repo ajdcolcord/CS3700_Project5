@@ -73,7 +73,7 @@ class Server:
         leaderCommit = self.last_applied
 
 
-        app_entry = create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, leaderCommit)
+        app_entry = Message.create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, leaderCommit)
         send(app_entry)
 
     def receive_append_new_entry(self, message):
