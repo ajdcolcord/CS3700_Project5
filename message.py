@@ -43,20 +43,6 @@ class Message:
         except:
             raise Exception("Malformed message: " + str(json))
 
-    # @staticmethod
-    # def create_vote_message_from_json(json):
-    #     try:
-    #         newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
-    #         if json['key']:
-    #             newMessage.add_key(json['key'])
-    #             print "added key: " + str(newMessage.key)
-    #         if json.get('value'):
-    #             newMessage.add_value(json['value'])
-    #             print "added value: " + str(newMessage.value)
-    #
-    #         return newMessage
-    #     except:
-    #         raise Exception("Malformed message: " + str(json))
 
     def create_response_message(self, type):
         return Message(self.dst, self.src, self.leader, type, self.message_id, term=self.term)
@@ -84,13 +70,13 @@ class Message:
         return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
                 'type': message.type, 'MID': message.message_id}
 
-    def create_vote_message(self, src):
+    def create_vote_message(self, src, followers_leader):
         message = self.create_response_message('vote')
-        return {'src': src, 'dst': message.dst, 'leader': message.leader,
+        return {'src': src, 'dst': message.dst, 'leader': followers_leader,
                 'type': 'vote', 'MID': message.message_id, 'term': message.term}
 
     def create_vote_request_message(self, src, term):
-        return {'src': src, 'dst': "FFFF", 'leader': src,
+        return {'src': src, 'dst': "FFFF", 'leader': 0,
                 'type': "voteRequest", 'MID': 1234567890, 'term': term}
 
     @staticmethod

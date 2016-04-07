@@ -30,8 +30,8 @@ class Server:
             self.match_index[replica] = 0
 
 
-
     def add_entry(self, command, term):
+        print str(self.id) + ": Adding new entry: " + str(command) +" : " + str(term)
         self.log.append((command, term))
         self.commit_index = len(self.log) # 'increment' our last-committed index
         self.send_append_new_entry()
@@ -77,6 +77,7 @@ class Server:
         self.send(app_entry)
 
     def receive_append_new_entry(self, message):
+        print str(self.id) + " receiving AppendEntry " + str(message)
         logEntry = message['logEntry']
         leader_prev_log_index = logEntry['prevLogIndex']
         leader_prev_log_term = logEntry['prevLogTerm']
@@ -166,7 +167,7 @@ class Server:
             self.current_term = vote_request_from_candidate.term
             self.get_new_election_timeout()
             self.voted_for = vote_request_from_candidate.src
-            json_message = vote_request_from_candidate.create_vote_message(self.id)
+            json_message = vote_request_from_candidate.create_vote_message(self.id, self.leader_id)
             self.send(json_message)
 
     def send_vote_request(self):
