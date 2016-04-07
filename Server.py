@@ -33,7 +33,7 @@ class Server:
     def add_entry(self, command, term):
         print str(self.id) + ": Adding new entry: " + str(command) +" : " + str(term)
         self.log.append((command, term))
-        self.commit_index = len(self.log) # 'increment' our last-committed index
+        self.commit_index = len(self.log) - 1 # 'increment' our last-committed index
         self.send_append_new_entry()
 
 
@@ -74,8 +74,8 @@ class Server:
         #if prevLogTerm == 0:
         #    entries_to_send = self.log
         #else:
-        entries_to_send = self.log[self.commit_index - 1:]
-        print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index -1)
+        entries_to_send = self.log[self.commit_index:]
+        print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
 
         leaderCommit = self.last_applied
 
@@ -97,7 +97,7 @@ class Server:
             #if self.log[self.commit_index][1] == leader_prev_log_term:
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                 self.log = self.log[:leader_prev_log_index] + logEntry['entries']
-                self.commit_index = len(self.log)
+                self.commit_index = len(self.log) - 1
                 # TODO: send ack, add to log
                 reply = {'src': self.id,
                          'dst': message['src'],
