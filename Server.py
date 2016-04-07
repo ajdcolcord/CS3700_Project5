@@ -103,8 +103,8 @@ class Server:
                          'dst': message['src'],
                          'type': "appendACK",
                          'leader': self.leader_id,
-                         'follower_last_added': self.commit_index,
-                         'follower_last_committed': self.last_applied}
+                         'follower_last_applied': self.last_applied,
+                         'follower_commit_index': self.commit_index}
                 self.send(reply)
 
             elif self.log[leader_prev_log_index][1] != leader_prev_log_term:
@@ -113,8 +113,8 @@ class Server:
                          'dst': message['src'],
                          'type': "appendACK",
                          'leader': self.leader_id,
-                         'follower_commit_index': self.commit_index} #,
-                         #'follower_last_applied': self.last_applied}
+                         'follower_last_applied': self.last_applied,
+                         'follower_commit_index': self.commit_index}
                 self.send(reply)
 
 

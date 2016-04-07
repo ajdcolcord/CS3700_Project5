@@ -43,10 +43,10 @@ def leader_receive_message(msg):
 
     if msg['type'] == 'appendACK':
         follow_source = msg['src']
-        follow_last_commit = int(msg['follower_commit_index'])
+        follow_commit_index = int(msg['follower_commit_index'])
         #follow_last_applied = int(msg['follower_last_applied'])
         print str(SERVER.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source)
-        SERVER.match_index[follow_source] = follow_last_commit
+        SERVER.match_index[follow_source] = follow_commit_index
 
         # if quorum size reached at last_applied_index + 1
         #if SERVER.quorum_size
