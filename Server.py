@@ -76,11 +76,11 @@ class Server:
         #else:
         entries_to_send = self.log[self.commit_index:]
         print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
+        #
+        # leaderCommit = self.last_applied
 
-        leaderCommit = self.last_applied
 
-
-        app_entry = Message.create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, leaderCommit)
+        app_entry = Message.create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
         self.send(app_entry)
 
     def receive_append_new_entry(self, message):
@@ -97,11 +97,12 @@ class Server:
             #if self.log[self.commit_index][1] == leader_prev_log_term:
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                 self.log = self.log[:leader_prev_log_index] + logEntry['entries']
-                self.commit_index = len(self.log) - 1
+                self.commit_index = len(self.log)
                 # TODO: send ack, add to log
                 reply = {'src': self.id,
                          'dst': message['src'],
                          'type': "appendACK",
+                         'leader': self.leader_id,
                          'follower_last_added': self.commit_index,
                          'follower_last_committed': self.last_applied}
                 self.send(reply)
@@ -111,6 +112,7 @@ class Server:
                 reply = {'src': self.id,
                          'dst': message['src'],
                          'type': "appendACK",
+                         'leader': self.leader_id,
                          'follower_commit_index': self.commit_index} #,
                          #'follower_last_applied': self.last_applied}
                 self.send(reply)
