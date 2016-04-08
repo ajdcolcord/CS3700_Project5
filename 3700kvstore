@@ -48,7 +48,7 @@ def leader_receive_message(msg):
         follow_source = msg['src']
         follow_commit_index = int(msg['follower_commit_index'])
         #follow_last_applied = int(msg['follower_last_applied'])
-        print str(SERVER.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source)
+        print str(SERVER.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg)
         SERVER.match_index[follow_source] = follow_commit_index
 
         # if quorum size reached at last_applied_index + 1

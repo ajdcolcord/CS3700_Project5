@@ -203,7 +203,6 @@ class Server:
                 if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                     self.log = self.log[:leader_prev_log_index] + logEntry['entries']
                     self.commit_index = len(self.log) - 1
-                    # TODO: send ack, add to log
                     reply = {'src': self.id,
                              'dst': message['src'],
                              'type': "appendACK",
@@ -211,6 +210,7 @@ class Server:
                              'follower_last_applied': self.last_applied,
                              'follower_commit_index': self.commit_index}
                     self.send(reply)
+
 
                 elif self.log[leader_prev_log_index][1] != leader_prev_log_term:
                     # TODO: send fail, do not add to log
