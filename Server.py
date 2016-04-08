@@ -77,7 +77,6 @@ class Server:
         if message.type == 'get':
             self.add_entry((message.type, (message.key)), self.current_term)
             self.send_append_new_entry()
-
             self.get(message)
         elif message.type == 'put':
             self.add_entry((message.type, (message.key, message.value)), self.current_term)
@@ -173,21 +172,17 @@ class Server:
                          'follower_commit_index': self.commit_index}
                 self.send(reply)
 
-    """
-    def receive_append_entry(self, append_entry_message):
-        if append_entry_message.term < self.term:
-            print ' '
-            # TODO: reply false
-        # if my log doesn't contain an entry contained at prevLogIndex whose term matches prevLogTerm
-        if self.log[append_entry_message.prev_log_index][1] != append_entry_message.prev_log_term:
-            print ' '
-            # TODO: reply false
-
-        if self.log[append_entry_message.commit_index][1] != append_entry_message.term:
-            self.log = self.log[:append_entry_message.commit_index - 1]
-    """
-
-
+    # def receive_append_entry(self, append_entry_message):
+    #     if append_entry_message.term < self.term:
+    #         print ' '
+    #         # TODO: reply false
+    #     # if my log doesn't contain an entry contained at prevLogIndex whose term matches prevLogTerm
+    #     if self.log[append_entry_message.prev_log_index][1] != append_entry_message.prev_log_term:
+    #         print ' '
+    #         # TODO: reply false
+    #
+    #     if self.log[append_entry_message.commit_index][1] != append_entry_message.term:
+    #         self.log = self.log[:append_entry_message.commit_index - 1]
 
     def put_into_store(self, key, value):
         """
@@ -198,7 +193,6 @@ class Server:
         """
         self.key_value_store[key] = value
         print str(self.id) + ": Added " + str(key) + " with value " + str(value)
-
 
     def send(self, json_message):
         """
@@ -244,13 +238,13 @@ class Server:
         @:return: Void
         """
         print str(self.id) + ": SEND_VOTE_REQUEST" + str(datetime.datetime.now())
-        if self.voted_for is None:
-            # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
+        # if self.voted_for is None:
+        # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
 
-            vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
-            json_message = vote.create_vote_request_message(self.id, self.current_term)
-            self.voted_for = self.id
-            self.send(json_message)
+        vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
+        json_message = vote.create_vote_request_message(self.id, self.current_term)
+        self.voted_for = self.id
+        self.send(json_message)
 
     def become_follower(self, leader_id):
         """
