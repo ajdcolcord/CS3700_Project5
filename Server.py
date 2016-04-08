@@ -58,6 +58,7 @@ class Server:
         """
         for entry in self.client_queue:
             self.add_client_entry_to_log(entry)
+        self.client_queue = []
 
     def add_entry(self, command, term, client_address, mid):
         """
