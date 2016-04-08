@@ -233,7 +233,7 @@ class Server:
             if len(self.log) > leader_prev_log_index:
                 if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                     self.log = self.log[:leader_prev_log_index] + logEntry['entries']
-                    self.commit_index = len(self.log) - 1
+                    self.commit_index = len(self.log)
                     reply = {'src': self.id,
                              'dst': message['src'],
                              'type': "appendACK",
