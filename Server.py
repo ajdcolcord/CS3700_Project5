@@ -200,10 +200,10 @@ class Server:
         prevLogIndex = self.last_applied
 
         if prevLogIndex >= 0:
-           prevLogTerm = self.log[prevLogIndex][1]
+           prevLogTerm = self.log[prevLogIndex][1] or self.current_term
         else:
            prevLogIndex = -1
-           prevLogTerm = 0
+           # prevLogTerm = 0
 
         entries_to_send = self.log[self.last_applied + 1:]
         print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
