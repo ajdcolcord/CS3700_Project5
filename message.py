@@ -22,11 +22,9 @@ class Message:
 
             if json.get('key'):
                 newMessage.key = json['key']
-                print "added key: " + str(newMessage.key)
 
             if json.get('value'):
                 newMessage.value = json['value']
-                print "added value: " + str(newMessage.value)
 
             if json.get('term'):
                 newMessage.term = json['term']
