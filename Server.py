@@ -30,9 +30,10 @@ class Server:
         self.leader_id = "FFFF"
         self.node_state = "F"
         self.voted_for_me = []
+        self.client_queue = []
 
         self.commit_index = 0
-        self.last_applied = 0
+        self.last_applied = -1
         self.match_index = {}
         self.log = []
 
@@ -41,7 +42,24 @@ class Server:
         for replica in replica_ids:
             self.match_index[replica] = 0
 
-    def add_entry(self, command, term):
+    def add_to_client_queue(self, message):
+        """
+        Adds a new incoming message (get or put) from a client into the 'buffer' - client_queue
+        @:param message - Message object - the message to add to the queue
+        @:return Void
+        """
+        print str(self.id) + ": ADDING TO CLIENT QUEUE"
+        self.client_queue.append(message)
+
+    def pull_from_queue(self):
+        """
+        Loads all the entries in the client_queue into our log
+        @:return: Void
+        """
+        for entry in self.client_queue:
+            self.add_entry(entry.type, self.current_term, entry.src, entry.message_id)
+
+    def add_entry(self, command, term, client_address, mid):
         """
         Adds a new entry with the given command and the term into the log of this server. Increments
         the commit index of this server to the length of the log.
@@ -49,9 +67,31 @@ class Server:
                                     - Tuple(String, Tuple(key)
         :return: Void
         """
-        print str(self.id) + ": Adding new entry: " + str(command) +" : " + str(term)
-        self.log.append((command, term))
+        print str(self.id) + ": Adding new entry: " + str(client_address) + " : " + str(mid) + " : " + str(command) +" : " + str(term)
+        self.log.append((command, term, client_address, mid))
         self.commit_index = len(self.log) - 1 # 'increment' our last-committed index
+
+    def run_command_leader(self):
+        for index in range(self.last_applied + 1, self.commit_index + 1):
+            entry = self.log[index]
+            client_addr = entry[2]
+            mess_id = entry[3]
+            command = entry[0][0]
+            content = entry[0][1]
+            if command == 'get':
+                key = content[0]
+                message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
+                           'type': 'ok', 'MID': mess_id, 'value': self.key_value_store[key]}
+                self.send(message)
+            elif command == 'put':
+                key = content[0]
+                value = content[1]
+                message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
+                           'type': 'ok', 'MID': mess_id}
+                self.send(message)
+
+        #TODO: SERVER.apply_command/reply_to_clients(SERVER.last_committed)
+
 
     def get_new_election_timeout(self):
         """
@@ -68,20 +108,35 @@ class Server:
         """
         self.heartbeat_timeout_start = datetime.datetime.now()
 
-    def client_action(self, message):
+    # def client_action(self, message):
+    #     """
+    #     Effect: Runs the necessary actions when receiving a client message (get or put)
+    #     @:param message - Message object - the message to act upon
+    #     @:return: Void
+    #     """
+    #     if message.type == 'get':
+    #         self.add_entry((message.type, (message.key)), self.current_term)
+    #         self.send_append_entry()
+    #         self.get(message)
+    #     elif message.type == 'put':
+    #         self.add_entry((message.type, (message.key, message.value)), self.current_term)
+    #         self.send_append_entry()
+    #         self.put(message)
+
+    def add_client_entry_to_log(self, message):
         """
         Effect: Runs the necessary actions when receiving a client message (get or put)
         @:param message - Message object - the message to act upon
         @:return: Void
         """
         if message.type == 'get':
-            self.add_entry((message.type, (message.key)), self.current_term)
-            #self.send_append_new_entry()
-            self.get(message)
+            self.add_entry((message.type, (message.key)), self.current_term, message.src, message.message_id)
+            # self.send_append_entry()
+            # self.get(message)
         elif message.type == 'put':
-            self.add_entry((message.type, (message.key, message.value)), self.current_term)
-            #self.send_append_new_entry()
-            self.put(message)
+            self.add_entry((message.type, (message.key, message.value)), self.current_term, message.src, message.message_id)
+            # self.send_append_entry()
+            # self.put(message)
 
     def get(self, message):
         """
@@ -103,14 +158,14 @@ class Server:
         self.put_into_store(message.key, message.value)
         self.send(message.create_ok_put_message())
 
-    def send_append_new_entry(self):
+    def send_append_entry(self):
         """
         Effect: Send a new append entry message to the other replicas
         @:return: Void
         """
         src = self.id
         term = self.current_term
-        prevLogIndex = self.commit_index - 1
+        prevLogIndex = self.last_applied
 
         if prevLogIndex >= 0:
            prevLogTerm = self.log[prevLogIndex][1]
@@ -118,13 +173,15 @@ class Server:
            prevLogIndex = -1
            prevLogTerm = 0
 
-        entries_to_send = self.log[self.commit_index:]
+        entries_to_send = self.log[self.last_applied + 1:]
         print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
 
         app_entry = Message.create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
+        self.reset_heartbeat_timeout()
+        self.get_new_election_timeout()
         self.send(app_entry)
 
-    def receive_append_new_entry(self, message):
+    def receive_append_entry(self, message):
         """
         Receives a new append entry, and decides wether or not to store the value into our log (follower)
         and send a response.
@@ -136,6 +193,8 @@ class Server:
         leader_prev_log_index = logEntry['prevLogIndex']
         leader_prev_log_term = logEntry['prevLogTerm']
 
+        self.get_new_election_timeout()
+
         if len(self.log) == 0:
             self.log = logEntry['entries']
 
@@ -143,7 +202,7 @@ class Server:
             if len(self.log) > leader_prev_log_index:
                 if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                     self.log = self.log[:leader_prev_log_index] + logEntry['entries']
-                    self.commit_index = len(self.log)
+                    self.commit_index = len(self.log) - 1
                     # TODO: send ack, add to log
                     reply = {'src': self.id,
                              'dst': message['src'],

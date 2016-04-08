@@ -19,11 +19,12 @@ SERVER.get_new_election_timeout()
 
 def leader_receive_message(msg):
     """
-        All Leader Message Receiving
+    All Leader Message Receiving
     """
     if msg['type'] in ['get', 'put']:
         message = Message.create_message_from_json(msg)
-        SERVER.client_action(message)
+        SERVER.add_to_client_queue(message)
+        # SERVER.client_action(message)
 
     elif msg['type'] == 'heartbeatACK':
         print "~~~~~~~HEARTBEAT_ACK++++++"
@@ -43,6 +44,7 @@ def leader_receive_message(msg):
             SERVER.become_follower(msg['leader'])
 
     if msg['type'] == 'appendACK':
+        SERVER.get_new_election_timeout()
         follow_source = msg['src']
         follow_commit_index = int(msg['follower_commit_index'])
         #follow_last_applied = int(msg['follower_last_applied'])
@@ -51,20 +53,24 @@ def leader_receive_message(msg):
 
         # if quorum size reached at last_applied_index + 1
         #if SERVER.quorum_size
-        agreement_size = 0
+        agreement_size = 1
         for replica in SERVER.match_index:
-            if SERVER.match_index[replica] >= SERVER.last_applied:
+            if SERVER.match_index[replica] >= SERVER.commit_index:
                 agreement_size += 1
 
         if agreement_size >= SERVER.quorum_size:
-            #TODO: SERVER.apply_command(SERVER.last_applied)
+            #TODO: SERVER.apply_command/reply_to_clients(SERVER.last_committed)
+            SERVER.run_command_leader()
+
+            SERVER.last_applied = SERVER.commit_index
+
             print str(SERVER.id) + "agreement size reached"
 
         print str(SERVER.id) + ": got APPEND ACK"
 
 def candidate_receive_message(msg):
     """
-        All Candidate Message Receiving
+    All Candidate Message Receiving
     """
     if msg['type'] == 'vote':
         print str(SERVER.id) + ": Got Vote Message----------"
@@ -118,7 +124,7 @@ def follower_receive_message(msg):
 
     if msg['type'] == 'appendEntry':
 
-        SERVER.receive_append_new_entry(msg)
+        SERVER.receive_append_entry(msg)
 
 
 while True:
@@ -130,7 +136,14 @@ while True:
     if SERVER.node_state == "L":
         print str(SERVER.id) + " LEADER"
         if SERVER.heart_beat_timedout():
-            SERVER.send_heartbeat()
+            if SERVER.last_applied < len(SERVER.log):
+                SERVER.send_append_entry()
+            else:
+                SERVER.pull_from_queue()
+                if SERVER.last_applied < len(SERVER.log):
+                    SERVER.send_append_entry()
+                else:
+                    SERVER.send_heartbeat()
 
     print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
 
