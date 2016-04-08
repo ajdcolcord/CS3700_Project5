@@ -76,11 +76,11 @@ class Server:
         """
         if message.type == 'get':
             self.add_entry((message.type, (message.key)), self.current_term)
-            self.send_append_new_entry()
+            #self.send_append_new_entry()
             self.get(message)
         elif message.type == 'put':
             self.add_entry((message.type, (message.key, message.value)), self.current_term)
-            self.send_append_new_entry()
+            #self.send_append_new_entry()
             self.put(message)
 
     def get(self, message):
@@ -200,6 +200,7 @@ class Server:
         @:param json_message: the json message to send on the socket
         """
         try:
+            print str(self.id) + " SENDING MESSAGE of type  " + json_message['type'] + " -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             self.sock.send(json.dumps(json_message) + '\n')
         except:
             raise Exception("Could not successfully send message" + str(json_message))
