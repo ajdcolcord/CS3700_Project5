@@ -46,15 +46,17 @@ def leader_receive_message(msg):
     if msg['type'] == 'appendACK':
         SERVER.get_new_election_timeout()
         follow_source = msg['src']
-        follow_commit_index = int(msg['follower_commit_index'])
+        follower_commit_index = int(msg['follower_commit_index'])
         #follow_last_applied = int(msg['follower_last_applied'])
-        print str(SERVER.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg)
-        SERVER.match_index[follow_source] = follow_commit_index
+        SERVER.match_index[follow_source] = follower_commit_index
+        print str(SERVER.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg) + "matchIndex =" + str(SERVER.match_index[follow_source])
+
 
         # if quorum size reached at last_applied_index + 1
         #if SERVER.quorum_size
         agreement_size = 1
         for replica in SERVER.match_index:
+            print str(SERVER.id) + " matchIndex for " + str(replica) + " = " + str(SERVER.match_index[replica]) + ", thisCommitIndex = " + str(SERVER.commit_index)
             if SERVER.match_index[replica] >= SERVER.commit_index:
                 agreement_size += 1
 
