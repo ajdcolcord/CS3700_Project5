@@ -200,10 +200,10 @@ class Server:
         prevLogIndex = self.last_applied
 
         if prevLogIndex >= 0:
-           prevLogTerm = self.log[prevLogIndex][1] or self.current_term
+           prevLogTerm = self.log[prevLogIndex][1]
         else:
            prevLogIndex = -1
-           # prevLogTerm = 0
+           prevLogTerm = 0
 
         entries_to_send = self.log[self.last_applied + 1:]
         print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
@@ -229,6 +229,10 @@ class Server:
 
         if len(self.log) == 0:
             self.log = logEntry['entries']
+            self.commit_index = len(self.log) - 1
+
+        # if leader_prev_log_term = 0:
+        #     self.log =
 
         else:
             if len(self.log) - 1 > leader_prev_log_index:
@@ -253,6 +257,7 @@ class Server:
                              'leader': self.leader_id,
                              'follower_last_applied': self.last_applied,
                              'follower_commit_index': self.commit_index}
+                    self.commit_index = len(self.log) - 1
                     self.send(reply)
             else:
                 # TODO: send fail, do not add to log
@@ -262,6 +267,7 @@ class Server:
                          'leader': self.leader_id,
                          'follower_last_applied': self.last_applied,
                          'follower_commit_index': self.commit_index}
+                self.commit_index = len(self.log) - 1
                 self.send(reply)
 
     # def receive_append_entry(self, append_entry_message):
