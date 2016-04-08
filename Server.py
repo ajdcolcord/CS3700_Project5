@@ -57,7 +57,7 @@ class Server:
         @:return: Void
         """
         for entry in self.client_queue:
-            self.add_entry(entry.type, self.current_term, entry.src, entry.message_id)
+            self.add_client_entry_to_log(entry)
 
     def add_entry(self, command, term, client_address, mid):
         """
