@@ -230,7 +230,7 @@ class Server:
             self.log = logEntry['entries']
 
         else:
-            if len(self.log) > leader_prev_log_index:
+            if len(self.log) - 1 > leader_prev_log_index:
                 if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                     self.log = self.log[:leader_prev_log_index] + logEntry['entries']
                     self.commit_index = len(self.log) - 1

@@ -56,7 +56,7 @@ def leader_receive_message(msg):
         #if SERVER.quorum_size
         agreement_size = 1
         for replica in SERVER.match_index:
-            print str(SERVER.id) + " matchIndex for " + str(replica) + " = " + str(SERVER.match_index[replica]) + ", thisCommitIndex = " + str(SERVER.commit_index)
+            print str(SERVER.id) + " matchIndex for " + str(replica) + " = " + str(SERVER.match_index[replica]) + ", prevCommitIndex = " + str(SERVER.commit_index - 1)
             if SERVER.match_index[replica] >= SERVER.commit_index - 1:
                 agreement_size += 1
 
