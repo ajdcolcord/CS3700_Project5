@@ -264,8 +264,6 @@ class Server:
         Initiate a new election - setting voted_for to None, and voted_for_me to []
         @:return: Void
         """
-        # self.voted_for = None
-        # self.voted_for_me = []
         self.voted_for = self.id
         self.voted_for_me = [self.voted_for]
         self.current_term += 1
@@ -301,6 +299,7 @@ class Server:
     def change_to_leader(self):
         """
         Execute the actions needed to change to a leader status, resetting timeouts, leader ID, etc.
+        @:return: Void
         """
         print str(self.id) + "CHANGED TO LEADER!!!!!!"
         self.get_new_election_timeout()
