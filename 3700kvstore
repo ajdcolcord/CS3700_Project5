@@ -60,7 +60,7 @@ def leader_receive_message(msg):
             if SERVER.match_index[replica] >= SERVER.commit_index - 1:
                 agreement_size += 1
 
-        if agreement_size >= SERVER.quorum_size:
+        if agreement_size == SERVER.quorum_size:
             #TODO: SERVER.apply_command/reply_to_clients(SERVER.last_committed)
             SERVER.run_command_leader()
 
