@@ -1,5 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/python -u
 
+# Austin Colcord and Nick Scheuring
 
 import sys, socket, select, time, json, random, datetime
 from message import Message
@@ -118,7 +119,6 @@ def follower_receive_message(msg):
     if msg['type'] == 'appendEntry':
 
         SERVER.receive_append_new_entry(msg)
-
 
 
 while True:

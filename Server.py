@@ -1,8 +1,20 @@
+#!/usr/bin/python -u
+
+# Austin Colcord and Nick Scheuring
+
 import sys, socket, select, time, json, random, datetime
 from message import Message
 
+
 class Server:
+    """
+    Defines the class of a Server (replica)
+    """
+
     def __init__(self, id, replica_ids):
+        """
+        Initializes a new server with the given ID number and the list of replica IDs
+        """
         self.id = id
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_SEQPACKET)
         self.sock.connect(id)
@@ -29,40 +41,77 @@ class Server:
         for replica in replica_ids:
             self.match_index[replica] = 0
 
-
     def add_entry(self, command, term):
+        """
+        Adds a new entry with the given command and the term into the log of this server. Increments
+        the commit index of this server to the length of the log.
+        @:param: command - One of:  - Tuple(String, Tuple(key, value))
+                                    - Tuple(String, Tuple(key)
+        :return: Void
+        """
         print str(self.id) + ": Adding new entry: " + str(command) +" : " + str(term)
         self.log.append((command, term))
         self.commit_index = len(self.log) - 1 # 'increment' our last-committed index
-        self.send_append_new_entry()
-
 
     def get_new_election_timeout(self):
+        """
+        Effect: Resets the election timeout (selecting a new random timeout range)
+        :return: Void
+        """
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
 
     def reset_heartbeat_timeout(self):
-       self.heartbeat_timeout_start = datetime.datetime.now()
+        """
+        Effect: Resets the heartbeat timeout
+        :return: Void
+        """
+        self.heartbeat_timeout_start = datetime.datetime.now()
 
     def client_action(self, message):
-        # TODO: 1) add command (type, values) to log with self.term (uncommitted)
-
+        """
+        Effect: Runs the necessary actions when receiving a client message (get or put)
+        @:param message - Message object - the message to act upon
+        @:return: Void
+        """
         if message.type == 'get':
             self.add_entry((message.type, (message.key)), self.current_term)
+            self.send_append_new_entry()
 
             self.get(message)
         elif message.type == 'put':
             self.add_entry((message.type, (message.key, message.value)), self.current_term)
+            self.send_append_new_entry()
             self.put(message)
 
-    def send_append_new_entry(self):
+    def get(self, message):
+        """
+        Effect: sends either a fail message or an OK message, depending on if the client's requested
+        key exists in this key value store or not
+        @:param message - Message object - the message received to use to send a response
+        @:return: Void
+        """
+        if message.key not in self.key_value_store:
+            self.send(message.create_fail_message())
+        else:
+            self.send(message.create_ok_get_message(self.key_value_store[message.key]))
 
-        # src, term, prevLogIndex, prevLogTerm, entries, leaderCommit
+    def put(self, message):
+        """
+        Effect: stores the message's value at the message's key located in our key value store
+        @:param message - Message object - the message to get the key and value from
+        """
+        self.put_into_store(message.key, message.value)
+        self.send(message.create_ok_put_message())
+
+    def send_append_new_entry(self):
+        """
+        Effect: Send a new append entry message to the other replicas
+        @:return: Void
+        """
         src = self.id
         term = self.current_term
-
         prevLogIndex = self.commit_index - 1
-
 
         if prevLogIndex >= 0:
            prevLogTerm = self.log[prevLogIndex][1]
@@ -70,20 +119,19 @@ class Server:
            prevLogIndex = -1
            prevLogTerm = 0
 
-        #entries_to_send = []
-        #if prevLogTerm == 0:
-        #    entries_to_send = self.log
-        #else:
         entries_to_send = self.log[self.commit_index:]
         print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
-        #
-        # leaderCommit = self.last_applied
-
 
         app_entry = Message.create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
         self.send(app_entry)
 
     def receive_append_new_entry(self, message):
+        """
+        Receives a new append entry, and decides wether or not to store the value into our log (follower)
+        and send a response.
+        @:param message - Json object - the message received from the leader
+        @:return: Void
+        """
         print str(self.id) + " receiving AppendEntry " + str(message)
         logEntry = message['logEntry']
         leader_prev_log_index = logEntry['prevLogIndex']
@@ -92,10 +140,8 @@ class Server:
         if len(self.log) == 0:
             self.log = logEntry['entries']
 
-        #if leader_prev_log_index == -1:
         else:
             if len(self.log) > leader_prev_log_index:
-                #if self.log[self.commit_index][1] == leader_prev_log_term:
                 if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                     self.log = self.log[:leader_prev_log_index] + logEntry['entries']
                     self.commit_index = len(self.log)
@@ -127,7 +173,7 @@ class Server:
                          'follower_commit_index': self.commit_index}
                 self.send(reply)
 
-
+    """
     def receive_append_entry(self, append_entry_message):
         if append_entry_message.term < self.term:
             print ' '
@@ -139,47 +185,50 @@ class Server:
 
         if self.log[append_entry_message.commit_index][1] != append_entry_message.term:
             self.log = self.log[:append_entry_message.commit_index - 1]
+    """
 
-    def get(self, message):
-        print str(self.id) + ": Get"
-        if message.key not in self.key_value_store:
-            self.send(message.create_fail_message())
-        else:
 
-            self.send(message.create_ok_get_message(self.key_value_store[message.key]))
-
-    def put(self, message):
-        print str(self.id) + ": Put"
-
-        self.put_into_store(message.key, message.value)
-        print str(self.id) + ": Added " + str(message.key) + " with value " + str(message.value)
-
-        # assuming successful
-        self.send(message.create_ok_put_message())
 
     def put_into_store(self, key, value):
+        """
+        Store the given key and value into self.key_value_store
+        @:param key - String - the key to add
+        @:param value - String - the value to add at the location of key
+        @:return: Void
+        """
         self.key_value_store[key] = value
+        print str(self.id) + ": Added " + str(key) + " with value " + str(value)
+
 
     def send(self, json_message):
-        #print str(self.id) + ": sending"
-
+        """
+        Takes in a json message to send on the socket
+        @:param json_message: the json message to send on the socket
+        """
         try:
             self.sock.send(json.dumps(json_message) + '\n')
         except:
             raise Exception("Could not successfully send message" + str(json_message))
 
-    def am_i_leader(self):
-        return self.leader_id == self.id
-
     def election_timedout(self):
+        """
+        Checks if this election cycle of this server has timed out
+        @:return: Boolean - True if timedout, False if not
+        """
         return (datetime.datetime.now() - self.election_timeout_start).microseconds > (self.election_timeout * 1000)
 
     def heart_beat_timedout(self):
+        """
+        Checks if this heart_beat cycle of this server has timed out (to check if it (leader) needs to resend a heartbeat)
+        @:return: Boolean - True if timedout, False if not
+        """
         return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > (self.heartbeat_timeout * 1000)
 
     def send_vote(self, vote_request_from_candidate):
         """
         When a Follower, send a vote back to the requesting Candidate
+        @:param vote_request_from_candidate: Message object - the vote request form a candidate
+        @:return: Void
         """
         print str(self.id) + ": SENDING VOTE~!~!~!~!~!~ to : " + str(vote_request_from_candidate.src) + " requestterm = " + str(vote_request_from_candidate.term) + str(datetime.datetime.now())
         if self.voted_for is None:
@@ -190,68 +239,77 @@ class Server:
             self.send(json_message)
 
     def send_vote_request(self):
+        """
+        When a candidate, send out this vote request to all replicas
+        @:return: Void
+        """
         print str(self.id) + ": SEND_VOTE_REQUEST" + str(datetime.datetime.now())
         if self.voted_for is None:
             # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
 
-            # Send a vote request message to all other followers
             vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
             json_message = vote.create_vote_request_message(self.id, self.current_term)
             self.voted_for = self.id
             self.send(json_message)
 
     def become_follower(self, leader_id):
+        """
+        Execute the actions to become a follower (resetting node_state, election timeout, votedforme, votedfor), and
+        set this leader_id to the input leader_id
+        @:param leader_id - Int - the ID of the new leader
+        @:return Void
+        """
         self.node_state = "F"
         self.get_new_election_timeout()
         self.voted_for_me = []
         self.voted_for = None
         self.leader_id = leader_id
 
-
     def initiate_election(self):
-        print str(self.id) + "INITIATE_ELECTION"
-        self.voted_for = None
-        self.voted_for_me = []
+        """
+        Initiate a new election - setting voted_for to None, and voted_for_me to []
+        @:return: Void
+        """
+        # self.voted_for = None
+        # self.voted_for_me = []
+        self.voted_for = self.id
+        self.voted_for_me = [self.voted_for]
         self.current_term += 1
-        print "INCREMENTED TERM : " + str(self.current_term)
+        print str(self.id) + "INITIATE_ELECTION --  INCREMENTED TERM : " + str(self.current_term)
         self.get_new_election_timeout()
         self.node_state = "C"
         self.send_vote_request()
 
     def receive_vote(self, message):
-        # if terms are equal, and src has not voted for me yet
-        print str(self.id) + " : receiving vote--- messageterm=" + str(message.term) + " myterm=" + str(self.current_term) + "votefrom: " + str(message.src) + " voted4me=" + str(self.voted_for_me) + " time=" + str(datetime.datetime.now())
+        """
+        Process a new vote message, determining if we can add it to our counted votes for this election as a candidate
+        @:param message - the vote Message object
+        @:return: Void
+        """
         if message.term == self.current_term and message.src not in self.voted_for_me:
             self.voted_for_me.append(message.src)
-            print "ADDED TO VOTED_FOR_ME: " + str(len(self.voted_for_me))
-            #self.get_new_election_timeout()
         if len(self.voted_for_me) >= self.quorum_size:
             self.change_to_leader()
 
-        print "RECEIVED: that_term=" + str(message.term) + " Candidate_term=" + str(self.current_term) + " VOTED_FOR_ME = " + str(self.voted_for_me)
-
-
-            #self.request_vote_RPC(message.term, message.src, 1, 1) #, msg['lastLogIndex'], msg['lastLogTerm'])
-
-    # def request_vote_RPC(self, term, candidateId, lastLogIndex, lastLogTerm):
-    #     if term < self.current_term:
-    #         return False  # reply false
-    #     else:
-    #         self.votes_recieved += 1
+        print str(self.id) + " : received vote--- messageterm=" + str(message.term) + " myterm=" + str(self.current_term) + "votefrom: " + str(message.src) + " voted4me=" + str(self.voted_for_me) + " time=" + str(datetime.datetime.now())
 
     def send_heartbeat(self):
-       print str(self.id) + "~~~HEARTBEAT~~~"
-       message = Message.create_heart_beat_message(self.id, self.current_term)
-       self.reset_heartbeat_timeout()
-       self.get_new_election_timeout()
-       self.send(message)
+        """
+        Send out a new heartbeat message to all replicas, resetting our heartbeat timeout
+        :return: Void
+        """
+        print str(self.id) + "~~~HEARTBEAT~~~"
+        message = Message.create_heart_beat_message(self.id, self.current_term)
+        self.reset_heartbeat_timeout()
+        self.get_new_election_timeout()
+        self.send(message)
 
     def change_to_leader(self):
+        """
+        Execute the actions needed to change to a leader status, resetting timeouts, leader ID, etc.
+        """
         print str(self.id) + "CHANGED TO LEADER!!!!!!"
         self.get_new_election_timeout()
         self.node_state = "L"
         self.leader_id = self.id
         self.send_heartbeat()
-
-
-

@@ -1,3 +1,7 @@
+#!/usr/bin/python -u
+
+# Austin Colcord and Nick Scheuring
+
 class Message:
 
     def __init__(self, src, dst, leader, type, message_id, key=None, value=None, term=None):
