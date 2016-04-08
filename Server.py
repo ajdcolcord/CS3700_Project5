@@ -80,7 +80,7 @@ class Server:
             content = entry[0][1]
             if command == 'get':
                 key = content[0]
-                if self.key_value_store[key]:
+                if self.key_value_store.get(key):
                     message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                                'type': 'ok', 'MID': mess_id, 'value': self.key_value_store[key]}
                     self.send(message)
