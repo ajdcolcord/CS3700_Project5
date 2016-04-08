@@ -18,44 +18,28 @@ class Message:
     @staticmethod
     def create_message_from_json(json):
         try:
-            #print "JSON MESSAGE: " + str(json)
-            #print "EACH FIELD: " + str(json['src']) + str(json['dst']) + str(json['leader']) + str(json['type']) + str(json['MID'])
             newMessage = Message(json['src'], json['dst'], json['leader'], json['type'], json['MID'])
-            #print newMessage
-
 
             if json.get('key'):
-                print 'adding key'
-                newMessage.add_key(json['key'])
+                newMessage.key = json['key']
                 print "added key: " + str(newMessage.key)
 
             if json.get('value'):
-                print 'adding value'
-                newMessage.add_value(json['value'])
+                newMessage.value = json['value']
                 print "added value: " + str(newMessage.value)
 
             if json.get('term'):
-                print 'adding term to message'
                 newMessage.term = json['term']
 
             if json.get('logEntry'):
-                print 'new logEntry'
                 newMessage.logEntry = json.get('logEntry')
-
 
             return newMessage
         except:
             raise Exception("Malformed message: " + str(json))
 
-
     def create_response_message(self, type):
         return Message(self.dst, self.src, self.leader, type, self.message_id, term=self.term)
-
-    def add_key(self, key):
-        self.key = key
-
-    def add_value(self, value):
-        self.value = value
 
     def create_ok_get_message(self, value):
         print 'createOK GET'
