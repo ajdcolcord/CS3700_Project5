@@ -139,11 +139,11 @@ while True:
         print str(SERVER.id) + " LEADER"
         if SERVER.heart_beat_timedout():
             if SERVER.last_applied < len(SERVER.log) - 1:
-                SERVER.send_append_entry()
+                SERVER.send_append_entries()
             else:
                 SERVER.pull_from_queue()
                 if SERVER.last_applied < len(SERVER.log) - 1:
-                    SERVER.send_append_entry()
+                    SERVER.send_append_entries()
                 else:
                     SERVER.send_heartbeat()
 

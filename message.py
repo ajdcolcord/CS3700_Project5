@@ -71,9 +71,9 @@ class Message:
                 'type': 'heartbeat', 'MID': 1234567890, 'term': term}
 
     @staticmethod
-    def create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries, leaderCommit):
+    def create_append_entry_message(src, dst, term, prevLogIndex, prevLogTerm, entries, leaderCommit):
         return {'src': src,
-                'dst': "FFFF",
+                'dst': dst,
                 'leader': src,
                 'type': 'appendEntry',
                 'MID': 1234567890,

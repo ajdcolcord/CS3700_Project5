@@ -40,7 +40,7 @@ class Server:
         self.key_value_store = {}
 
         for replica in replica_ids:
-            self.match_index[replica] = 0
+            self.match_index[replica] = -1
 
     def add_to_client_queue(self, message):
         """
@@ -163,6 +163,32 @@ class Server:
         self.put_into_store(message.key, message.value)
         self.send(message.create_ok_put_message())
 
+
+    def send_append_entries(self):
+        for replica in self.match_index:
+            self.send_inidivual_append_entry(replica)
+
+        self.reset_heartbeat_timeout()
+        self.get_new_election_timeout()
+
+
+    def send_inidivual_append_entry(self, replica_id):
+        src = self.id
+        term = self.current_term
+        prevLogIndex = self.match_index[replica_id]
+
+        if prevLogIndex >= 0:
+            prevLogTerm = self.log[self.match_index[replica_id]][1]
+        else:
+            prevLogIndex = -1
+            prevLogTerm = 0
+
+        entries_to_send = self.log[prevLogIndex + 1:]
+        print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
+        app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
+
+        self.send(app_entry)
+
     def send_append_entry(self):
         """
         Effect: Send a new append entry message to the other replicas
@@ -181,7 +207,7 @@ class Server:
         entries_to_send = self.log[self.last_applied + 1:]
         print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
 
-        app_entry = Message.create_append_entry_message(src, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
+        app_entry = Message.create_append_entry_message(src, "FFFF", term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
         self.reset_heartbeat_timeout()
         self.get_new_election_timeout()
         self.send(app_entry)
