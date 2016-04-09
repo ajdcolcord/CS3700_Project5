@@ -356,7 +356,7 @@ class Server:
             print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                 #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
-                self.log = self.log[:leader_prev_log_index] + logEntry['entries']
+                self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
                 print str(self.id) + " ADDED TO FOLLOWER LOG!!! -> " + str(self.log)
 
                 print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
