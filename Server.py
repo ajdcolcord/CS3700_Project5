@@ -294,6 +294,7 @@ class Server:
         prevLogIndex = self.match_index[replica_id]
 
         if prevLogIndex >= 0:
+            print str(self.id) + ": LOG SIZE = " + str(len(self.log)) + " prevLogIndex = " + str(prevLogIndex)
             prevLogItem = self.log[prevLogIndex]
             prevLogTerm = prevLogItem[1] #gets the previous term from log
 
