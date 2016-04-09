@@ -52,12 +52,13 @@ class Server:
             message = Message.create_message_from_json(msg)
             self.add_to_client_queue(message)
             value = self.key_value_store.get(message.key)
-            if value:
-                response = message.create_response_message('ok')
-                self.send(response.create_ok_get_message(value))
-            else:
-                response = message.create_response_message('fail')
-                self.send(response.create_fail_message())
+            if msg['type'] == 'get':
+                if value:
+                    response = message.create_response_message('ok')
+                    self.send(response.create_ok_get_message(value))
+                else:
+                    response = message.create_response_message('fail')
+                    self.send(response.create_fail_message())
 
 
         elif msg['type'] == 'heartbeatACK':
