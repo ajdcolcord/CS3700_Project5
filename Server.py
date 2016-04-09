@@ -54,10 +54,10 @@ class Server:
             value = self.key_value_store.get(message.key)
             if value:
                 response = message.create_response_message('ok')
-                send(response.create_ok_get_message(value))
+                self.send(response.create_ok_get_message(value))
             else:
                 response = message.create_response_message('fail')
-                send(response.create_fail_message())
+                self.send(response.create_fail_message())
 
 
         elif msg['type'] == 'heartbeatACK':
