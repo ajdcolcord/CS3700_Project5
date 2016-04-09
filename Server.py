@@ -150,6 +150,9 @@ class Server:
         self.commit_index = len(self.log) - 1 # 'increment' our last-committed index
 
     def run_command_leader(self):
+        """
+        Runs through the items in the log ready to be applied to the state machine, executing them each one by one
+        """
         for index in range(self.last_applied + 1, self.commit_index + 1):
             entry = self.log[index]
             client_addr = entry[2]
@@ -157,7 +160,7 @@ class Server:
             command = entry[0][0]
             content = entry[0][1]
             if command == 'get':
-                key = content[0]
+                key = content
                 if self.key_value_store.get(key):
                     message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                                'type': 'ok', 'MID': mess_id, 'value': self.key_value_store[key]}
@@ -169,6 +172,7 @@ class Server:
             elif command == 'put':
                 key = content[0]
                 value = content[1]
+                self.put_into_store(key, value)
                 message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                            'type': 'ok', 'MID': mess_id}
                 self.send(message)
