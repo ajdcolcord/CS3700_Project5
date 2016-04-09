@@ -55,8 +55,9 @@ class Server:
             if msg['type'] == 'get':
                 if value:
                     print 'FOUND VALUE: ' + str(value)
-                    return {"src": self.id, "dst": msg['src'], "leader": self.id,
+                    response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                             "type": "ok", "MID": msg['MID'], "value": str(value)}
+                    self.send(response)
 
                     # response = message.create_response_message('ok')
                     # self.send(response.create_ok_get_message(value))
