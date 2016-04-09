@@ -264,7 +264,7 @@ class Server:
             prevLogTerm = 0
 
         entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 1 + 10]
-        print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " Log=" + str(self.log[self.match_index[replica_id]]) + " SENDING: " + str(entries_to_send) + " CommitIndex = " + str(self.commit_index) + "\n"
+        print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " follower's match index=" + str(self.log[self.match_index[replica_id]]) + " SENDING: " + str(entries_to_send) + " CommitIndex = " + str(self.commit_index) + "\n"
         app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
 
         self.send(app_entry)
@@ -348,7 +348,7 @@ class Server:
 
 
         else:
-            print str(self.id) + "at prevIndex = " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(
+            print str(self.id) + "at prevIndex Entry= " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(
                 len(self.log)) + " RECEIVED ENTRIES: " + str(logEntry['entries']) + " CommitIndex = " + str(
                 self.commit_index) + "\n"
 
@@ -357,6 +357,7 @@ class Server:
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                 #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
                 self.log = self.log[:leader_prev_log_index] + logEntry['entries']
+                print str(self.id) + " ADDED TO FOLLOWER LOG!!! -> " + str(self.log)
 
                 print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
                 self.commit_index = len(self.log) - 1
