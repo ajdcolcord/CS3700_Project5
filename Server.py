@@ -293,22 +293,26 @@ class Server:
         term = self.current_term
         prevLogIndex = self.match_index[replica_id]
 
-        if prevLogIndex >= 0:
-            print str(self.id) + ": LOG SIZE = " + str(len(self.log)) + " prevLogIndex = " + str(prevLogIndex)
-            prevLogItem = self.log[prevLogIndex]
-            prevLogTerm = prevLogItem[1] #gets the previous term from log
-
+        if prevLogIndex > len(self.log) - 1:
+            app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 51], self.last_applied)
+            self.send(app_entry)
         else:
-            prevLogIndex = -1
-            prevLogTerm = 0
+            if prevLogIndex >= 0:
+                print str(self.id) + ": LOG SIZE = " + str(len(self.log)) + " prevLogIndex = " + str(prevLogIndex)
+                prevLogItem = self.log[prevLogIndex]
+                prevLogTerm = prevLogItem[1] #gets the previous term from log
 
-        entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 1 + 50]
-        # entries_to_send = self.log[self.match_index[replica_id] + 1:]
+            else:
+                prevLogIndex = -1
+                prevLogTerm = 0
 
-        #print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " follower's match index=" + str(self.log[self.match_index[replica_id]]) + " SENDING: " + str(entries_to_send) + " CommitIndex = " + str(self.commit_index) + "\n"
-        app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.last_applied)
+            entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 51]
+            # entries_to_send = self.log[self.match_index[replica_id] + 1:]
 
-        self.send(app_entry)
+            #print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " follower's match index=" + str(self.log[self.match_index[replica_id]]) + " SENDING: " + str(entries_to_send) + " CommitIndex = " + str(self.commit_index) + "\n"
+            app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.last_applied)
+
+            self.send(app_entry)
 
     # def send_append_entry(self):
     #     """
@@ -421,7 +425,9 @@ class Server:
                          'type': "appendACK",
                          'leader': self.leader_id,
                          'follower_last_applied': self.last_applied,
-                         'follower_commit_index': self.commit_index - 1}
+                         'follower_commit_index': self.commit_index}
+                        # 'follower_commit_index': self.commit_index} NEWWWWWWWWWWW
+
                 self.send(reply)
             # else:
             #     # TODO: send fail, do not add to log
