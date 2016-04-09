@@ -65,7 +65,7 @@ class Server:
                     # self.send(response.create_ok_get_message(value))
                 else:
                     print "DIDNT FIND VALUE: " + str(value)
-                    self.failed_queue.append(message, 0)
+                    self.failed_queue.append((msg, 0))
                     # response = message.create_response_message('fail')
                     # self.send(response.create_fail_message())
 
@@ -467,25 +467,29 @@ class Server:
             self.run_command_leader()
 
             self.last_applied = self.commit_index
+            for x in range(self.failed_queue):
+                msg = self.failed_queue[x][0]
+                tries = self.failed_queue[x][1]
+                value = self.key_value_store.get(msg['key'])
 
-            for message, tries in self.failed_queue:
-                value = self.key_value_store.get(message.key)
-
-                if message['type'] == 'get':
+                if msg['type'] == 'get':
                     if value:
                         print 'FOUND VALUE: ' + str(value)
                         response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                                     "type": "ok", "MID": msg['MID'], "value": str(value)}
                         self.send(response)
+                        del self.failed_queue[x]
 
                         # response = message.create_response_message('ok')
                         # self.send(response.create_ok_get_message(value))
                     else:
                         print "DIDNT FIND VALUE: " + str(value)
-                        tries += 1
-                        if tries >= 5:
+                        self.failed_queue[x][1] += 1
+                        if self.failed_queue[x][1] >= 5:
                             response = message.create_response_message('fail')
+                            del self.failed_queue[x]
                             self.send(response.create_fail_message())
+
 
 
             #print str(self.id) + "agreement size reached"
