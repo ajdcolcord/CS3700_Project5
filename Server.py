@@ -184,7 +184,7 @@ class Server:
             prevLogIndex = -1
             prevLogTerm = 0
 
-        entries_to_send = self.log[self.match_index[replica_id] + 1:]
+        entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 1 + 10]
         print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
         app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
 
