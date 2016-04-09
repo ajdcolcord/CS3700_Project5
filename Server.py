@@ -200,14 +200,15 @@ class Server:
         @:return: Void
         """
         for index in range(self.last_applied + 1, leader_last_applied + 1):
-            entry = self.log[index]
-            command = entry[0][0]
-            content = entry[0][1]
-            if command == 'put':
-                key = content[0]
-                value = content[1]
-                self.put_into_store(key, value)
-        self.last_applied = leader_last_applied
+            if self.log.get(index):
+                entry = self.log[index]
+                command = entry[0][0]
+                content = entry[0][1]
+                if command == 'put':
+                    key = content[0]
+                    value = content[1]
+                    self.put_into_store(key, value)
+                self.last_applied += index
 
     def get_new_election_timeout(self):
         """
