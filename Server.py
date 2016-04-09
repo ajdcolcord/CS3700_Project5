@@ -267,28 +267,28 @@ class Server:
 
         self.send(app_entry)
 
-    def send_append_entry(self):
-        """
-        Effect: Send a new append entry message to the other replicas
-        @:return: Void
-        """
-        src = self.id
-        term = self.current_term
-        prevLogIndex = self.last_applied
-
-        if prevLogIndex >= 0:
-           prevLogTerm = self.log[prevLogIndex][1]
-        else:
-           prevLogIndex = -1
-           prevLogTerm = 0
-
-        entries_to_send = self.log[self.last_applied + 1:]
-        print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
-
-        app_entry = Message.create_append_entry_message(src, "FFFF", term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
-        self.reset_heartbeat_timeout()
-        self.get_new_election_timeout()
-        self.send(app_entry)
+    # def send_append_entry(self):
+    #     """
+    #     Effect: Send a new append entry message to the other replicas
+    #     @:return: Void
+    #     """
+    #     src = self.id
+    #     term = self.current_term
+    #     prevLogIndex = self.last_applied
+    #
+    #     if prevLogIndex >= 0:
+    #        prevLogTerm = self.log[prevLogIndex][1]
+    #     else:
+    #        prevLogIndex = -1
+    #        prevLogTerm = 0
+    #
+    #     entries_to_send = self.log[self.last_applied + 1:]
+    #     print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
+    #
+    #     app_entry = Message.create_append_entry_message(src, "FFFF", term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
+    #     self.reset_heartbeat_timeout()
+    #     self.get_new_election_timeout()
+    #     self.send(app_entry)
 
     def receive_heartbeat(self, msg):
         """
