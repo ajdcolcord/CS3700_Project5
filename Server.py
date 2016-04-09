@@ -74,7 +74,7 @@ class Server:
             #print "~~~~~~~HEARTBEAT_ACK++++++"
             # message = Message.create_message_from_json(msg)
             self.get_new_election_timeout()
-            self.match_index[msg['src']] = msg['follower_commit_index']
+            #self.match_index[msg['src']] = msg['follower_commit_index']
 
             # TODO: commit log entry yet?????
 
