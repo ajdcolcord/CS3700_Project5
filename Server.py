@@ -580,7 +580,7 @@ class Server:
         Initiate a new election - setting voted_for to None, and voted_for_me to []
         @:return: Void
         """
-        for replica in replica_ids:
+        for replica in self.replica_ids:
             self.match_index[replica] = -1
 
         self.voted_for = self.id
