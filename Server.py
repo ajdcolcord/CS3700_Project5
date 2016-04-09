@@ -51,7 +51,7 @@ class Server:
         if msg['type'] in ['get', 'put']:
             message = Message.create_message_from_json(msg)
             self.add_to_client_queue(message)
-            value = self.key_value_store.get(Message.key)
+            value = self.key_value_store.get(message.key)
             if value:
                 response = message.create_response_message('ok')
                 send(response.create_ok_get_message(value))
