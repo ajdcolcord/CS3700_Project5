@@ -294,7 +294,7 @@ class Server:
         prevLogIndex = self.match_index[replica_id]
 
         if prevLogIndex >= 0:
-            prevLogTerm = self.log[self.match_index[replica_id]][1] #gets the previous term from log
+            prevLogTerm = self.log[prevLogIndex][1] #gets the previous term from log
 
         else:
             prevLogIndex = -1
@@ -487,7 +487,7 @@ class Server:
                         # self.send(response.create_ok_get_message(value))
                     else:
                         print "DIDNT FIND VALUE: " + str(value)
-                        self.failed_queue[x][1] += 1
+                        self.failed_queue[x] = (self.failed_queue[x][0], self.failed_queue[x][1] + 1)
                         if self.failed_queue[x][1] >= 5:
                             response = message.create_response_message('fail')
                             del self.failed_queue[x]
