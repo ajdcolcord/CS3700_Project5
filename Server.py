@@ -252,7 +252,6 @@ class Server:
         self.reset_heartbeat_timeout()
         self.get_new_election_timeout()
 
-
     def send_inidivual_append_entry(self, replica_id):
         src = self.id
         term = self.current_term
@@ -265,7 +264,7 @@ class Server:
             prevLogTerm = 0
 
         entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 1 + 10]
-        print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
+        print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " Log=" + str(self.log[self.match_index[replica_id]]) + " SENDING: " + str(entries_to_send) + " CommitIndex = " + str(self.commit_index) + "\n"
         app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
 
         self.send(app_entry)
@@ -338,12 +337,16 @@ class Server:
 
         self.get_new_election_timeout()
 
+        print str(self.id) + "at prevIndex = " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(len(self.log)) + " RECEIVED ENTRIES: " + str(logEntry['entries']) + " CommitIndex = " + str(self.commit_index) + "\n"
+
         if len(self.log) == 0:
             self.log = logEntry['entries']
             self.commit_index = len(self.log) - 1
 
         # if leader_prev_log_term = 0:
         #     self.log =
+
+
 
         else:
             # if len(self.log) - 1 > leader_prev_log_index:
