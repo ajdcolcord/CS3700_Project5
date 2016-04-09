@@ -54,9 +54,14 @@ class Server:
             value = self.key_value_store.get(message.key)
             if msg['type'] == 'get':
                 if value:
-                    response = message.create_response_message('ok')
-                    self.send(response.create_ok_get_message(value))
+                    print 'FOUND VALUE: ' + str(value)
+                    return {"src": self.id, "dst": msg['src'], "leader": self.id,
+                            "type": "ok", "MID": msg['MID'], "value": str(value)}
+
+                    # response = message.create_response_message('ok')
+                    # self.send(response.create_ok_get_message(value))
                 else:
+                    print "DIDNT FIND VALUE: " + str(value)
                     response = message.create_response_message('fail')
                     self.send(response.create_fail_message())
 
