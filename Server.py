@@ -21,7 +21,7 @@ class Server:
         self.replica_ids = replica_ids
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.heartbeat_timeout = 40
+        self.heartbeat_timeout = 100
         self.heartbeat_timeout_start = datetime.datetime.now()
         self.current_term = 0
         self.voted_for = None
@@ -53,7 +53,7 @@ class Server:
             self.add_to_client_queue(message)
 
         elif msg['type'] == 'heartbeatACK':
-            print "~~~~~~~HEARTBEAT_ACK++++++"
+            #print "~~~~~~~HEARTBEAT_ACK++++++"
             message = Message.create_message_from_json(msg)
             self.get_new_election_timeout()
             # TODO: commit log entry yet?????
@@ -79,12 +79,12 @@ class Server:
         @:return: Void
         """
         if msg['type'] == 'vote':
-            print str(self.id) + ": Got Vote Message----------"
+            #print str(self.id) + ": Got Vote Message----------"
             message = Message.create_message_from_json(msg)
             self.receive_vote(message)
 
         if msg['type'] == 'heartbeat':
-            print str(self.id) + "got ~~~HEARTBEAT~~~"
+            #print str(self.id) + "got ~~~HEARTBEAT~~~"
             heart_beat = Message.create_message_from_json(msg)
 
             if heart_beat.term >= self.current_term:
@@ -124,7 +124,7 @@ class Server:
         @:param message - Message object - the message to add to the queue
         @:return Void
         """
-        print str(self.id) + ": ADDING TO CLIENT QUEUE"
+        # str(self.id) + ": ADDING TO CLIENT QUEUE"
         self.client_queue.append(message)
 
     def pull_from_queue(self):
@@ -144,7 +144,7 @@ class Server:
                                     - Tuple(String, Tuple(key)
         :return: Void
         """
-        print str(self.id) + ": Adding new entry: " + str(client_address) + " : " + str(mid) + " : " + str(command) +" : " + str(term)
+        #print str(self.id) + ": Adding new entry: " + str(client_address) + " : " + str(mid) + " : " + str(command) +" : " + str(term)
         self.log.append((command, term, client_address, mid))
         self.commit_index = len(self.log) - 1 # 'increment' our last-committed index
 
@@ -316,7 +316,7 @@ class Server:
         @:return: Void
         """
         if msg['term'] >= self.current_term:
-            print str(self.id) + "got ~~~HEARTBEAT~~~"
+            #print str(self.id) + "got ~~~HEARTBEAT~~~"
             heart_beat = Message.create_message_from_json(msg)
             self.current_term = heart_beat.term
             self.leader_id = heart_beat.leader
@@ -331,7 +331,7 @@ class Server:
         @:param msg - the json message received from the candidate
         @:return: Void
         """
-        print str(self.id) + ": RECEIVED VOTE REQUEST from: " + str(msg['src']) + " time=" + str(datetime.datetime.now())
+        #print str(self.id) + ": RECEIVED VOTE REQUEST from: " + str(msg['src']) + " time=" + str(datetime.datetime.now())
 
         vote_req_message = Message.create_message_from_json(msg)
 
@@ -348,7 +348,7 @@ class Server:
         @:param message - Json object - the message received from the leader
         @:return: Void
         """
-        print str(self.id) + " receiving AppendEntry " + str(message)
+        #print str(self.id) + " receiving AppendEntry " + str(message)
         logEntry = message['logEntry']
         leader_prev_log_index = logEntry['prevLogIndex']
         leader_prev_log_term = logEntry['prevLogTerm']
@@ -432,14 +432,14 @@ class Server:
         follower_commit_index = int(msg['follower_commit_index'])
         # follow_last_applied = int(msg['follower_last_applied'])
         self.match_index[follow_source] = follower_commit_index
-        print str(self.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg) + "matchIndex =" + str(self.match_index[follow_source])
+        #print str(self.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg) + "matchIndex =" + str(self.match_index[follow_source])
 
         # if quorum size reached at last_applied_index + 1
         # if self.quorum_size
         agreement_size = 1
         for replica in self.match_index:
-            print str(self.id) + " matchIndex for " + str(replica) + " = " + str(
-                self.match_index[replica]) + ", prevCommitIndex = " + str(self.commit_index)
+            #print str(self.id) + " matchIndex for " + str(replica) + " = " + str(
+                #self.match_index[replica]) + ", prevCommitIndex = " + str(self.commit_index)
             if self.match_index[replica] >= self.commit_index:
                 agreement_size += 1
 
@@ -449,9 +449,9 @@ class Server:
 
             self.last_applied = self.commit_index
 
-            print str(self.id) + "agreement size reached"
+            #print str(self.id) + "agreement size reached"
 
-        print str(self.id) + ": got APPEND ACK"
+        #print str(self.id) + ": got APPEND ACK"
 
     def put_into_store(self, key, value):
         """
@@ -494,7 +494,7 @@ class Server:
         @:param vote_request_from_candidate: Message object - the vote request form a candidate
         @:return: Void
         """
-        print str(self.id) + ": SENDING VOTE~!~!~!~!~!~ to : " + str(vote_request_from_candidate.src) + " requestterm = " + str(vote_request_from_candidate.term) + str(datetime.datetime.now())
+        #print str(self.id) + ": SENDING VOTE~!~!~!~!~!~ to : " + str(vote_request_from_candidate.src) + " requestterm = " + str(vote_request_from_candidate.term) + str(datetime.datetime.now())
         if self.voted_for is None:
             self.current_term = vote_request_from_candidate.term
             self.get_new_election_timeout()
@@ -507,7 +507,7 @@ class Server:
         When a candidate, send out this vote request to all replicas
         @:return: Void
         """
-        print str(self.id) + ": SEND_VOTE_REQUEST" + str(datetime.datetime.now())
+        #print str(self.id) + ": SEND_VOTE_REQUEST" + str(datetime.datetime.now())
         # if self.voted_for is None:
         # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
 
@@ -537,7 +537,7 @@ class Server:
         self.voted_for = self.id
         self.voted_for_me = [self.voted_for]
         self.current_term += 1
-        print str(self.id) + "INITIATE_ELECTION --  INCREMENTED TERM : " + str(self.current_term)
+        #print str(self.id) + "INITIATE_ELECTION --  INCREMENTED TERM : " + str(self.current_term)
         self.get_new_election_timeout()
         self.node_state = "C"
         self.send_vote_request()
@@ -553,14 +553,14 @@ class Server:
         if len(self.voted_for_me) >= self.quorum_size:
             self.change_to_leader()
 
-        print str(self.id) + " : received vote--- messageterm=" + str(message.term) + " myterm=" + str(self.current_term) + "votefrom: " + str(message.src) + " voted4me=" + str(self.voted_for_me) + " time=" + str(datetime.datetime.now())
+        #print str(self.id) + " : received vote--- messageterm=" + str(message.term) + " myterm=" + str(self.current_term) + "votefrom: " + str(message.src) + " voted4me=" + str(self.voted_for_me) + " time=" + str(datetime.datetime.now())
 
     def send_heartbeat(self):
         """
         Send out a new heartbeat message to all replicas, resetting our heartbeat timeout
         :return: Void
         """
-        print str(self.id) + "~~~HEARTBEAT~~~"
+        #print str(self.id) + "~~~HEARTBEAT~~~"
         message = Message.create_heart_beat_message(self.id, self.current_term, self.last_applied)
         self.reset_heartbeat_timeout()
         self.get_new_election_timeout()
