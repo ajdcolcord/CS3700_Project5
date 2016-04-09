@@ -349,8 +349,8 @@ class Server:
             # if len(self.log) - 1 > leader_prev_log_index:
             print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
-                self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
-                # self.log = self.log[:leader_prev_log_index] + logEntry['entries']
+                #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
+                self.log = self.log[:leader_prev_log_index] + logEntry['entries']
 
                 print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
                 self.commit_index = len(self.log) - 1
@@ -371,7 +371,7 @@ class Server:
                          'type': "appendACK",
                          'leader': self.leader_id,
                          'follower_last_applied': self.last_applied,
-                         'follower_commit_index': self.commit_index - 1}
+                         'follower_commit_index': self.commit_index}
                 self.send(reply)
             # else:
             #     # TODO: send fail, do not add to log
