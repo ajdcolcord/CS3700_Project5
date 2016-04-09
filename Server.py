@@ -294,7 +294,8 @@ class Server:
         prevLogIndex = self.match_index[replica_id]
 
         if prevLogIndex >= 0:
-            prevLogTerm = self.log[prevLogIndex][1] #gets the previous term from log
+            prevLogItem = self.log[prevLogIndex]
+            prevLogTerm = prevLogItem[1] #gets the previous term from log
 
         else:
             prevLogIndex = -1
