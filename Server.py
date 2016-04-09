@@ -337,7 +337,6 @@ class Server:
 
         self.get_new_election_timeout()
 
-        print str(self.id) + "at prevIndex = " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(len(self.log)) + " RECEIVED ENTRIES: " + str(logEntry['entries']) + " CommitIndex = " + str(self.commit_index) + "\n"
 
         if len(self.log) == 0:
             self.log = logEntry['entries']
@@ -349,6 +348,10 @@ class Server:
 
 
         else:
+            print str(self.id) + "at prevIndex = " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(
+                len(self.log)) + " RECEIVED ENTRIES: " + str(logEntry['entries']) + " CommitIndex = " + str(
+                self.commit_index) + "\n"
+
             # if len(self.log) - 1 > leader_prev_log_index:
             print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
