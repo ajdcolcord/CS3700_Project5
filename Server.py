@@ -200,7 +200,7 @@ class Server:
         @:return: Void
         """
         for index in range(self.last_applied + 1, leader_last_applied + 1):
-            if self.log.get(index):
+            if len(self.log) - 1 >= index:
                 entry = self.log[index]
                 command = entry[0][0]
                 content = entry[0][1]
