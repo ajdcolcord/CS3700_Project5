@@ -51,7 +51,6 @@ class Server:
         if msg['type'] in ['get', 'put']:
             message = Message.create_message_from_json(msg)
             self.add_to_client_queue(message)
-            # self.client_action(message)
 
         elif msg['type'] == 'heartbeatACK':
             print "~~~~~~~HEARTBEAT_ACK++++++"
@@ -350,8 +349,9 @@ class Server:
             # if len(self.log) - 1 > leader_prev_log_index:
             print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
-                self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
-                #self.log.extend(logEntry['entries'])
+                #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
+                self.log = self.log[:leader_prev_log_index] + logEntry['entries']
+
                 print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
                 self.commit_index = len(self.log) - 1
                 reply = {'src': self.id,
@@ -365,13 +365,13 @@ class Server:
 
             elif self.log[leader_prev_log_index][1] != leader_prev_log_term:
                 # TODO: send fail, do not add to log
+                self.commit_index = len(self.log) - 1
                 reply = {'src': self.id,
                          'dst': message['src'],
                          'type': "appendACK",
                          'leader': self.leader_id,
                          'follower_last_applied': self.last_applied,
-                         'follower_commit_index': self.commit_index}
-                self.commit_index = len(self.log) - 1
+                         'follower_commit_index': self.commit_index - 1}
                 self.send(reply)
             # else:
             #     # TODO: send fail, do not add to log
