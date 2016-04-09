@@ -32,6 +32,8 @@ class Server:
         self.voted_for_me = []
         self.client_queue = []
 
+        self.failed_queue = []
+
         self.commit_index = 0
         self.last_applied = -1
         self.match_index = {}
@@ -63,8 +65,9 @@ class Server:
                     # self.send(response.create_ok_get_message(value))
                 else:
                     print "DIDNT FIND VALUE: " + str(value)
-                    response = message.create_response_message('fail')
-                    self.send(response.create_fail_message())
+                    self.failed_queue.append(message, 0)
+                    # response = message.create_response_message('fail')
+                    # self.send(response.create_fail_message())
 
 
         elif msg['type'] == 'heartbeatACK':
@@ -464,6 +467,26 @@ class Server:
             self.run_command_leader()
 
             self.last_applied = self.commit_index
+
+            for message, tries in self.failed_queue:
+                value = self.key_value_store.get(message.key)
+
+                if message['type'] == 'get':
+                    if value:
+                        print 'FOUND VALUE: ' + str(value)
+                        response = {"src": self.id, "dst": msg['src'], "leader": self.id,
+                                    "type": "ok", "MID": msg['MID'], "value": str(value)}
+                        self.send(response)
+
+                        # response = message.create_response_message('ok')
+                        # self.send(response.create_ok_get_message(value))
+                    else:
+                        print "DIDNT FIND VALUE: " + str(value)
+                        tries += 1
+                        if tries >= 5:
+                            response = message.create_response_message('fail')
+                            self.send(response.create_fail_message())
+
 
             #print str(self.id) + "agreement size reached"
 
