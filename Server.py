@@ -178,6 +178,21 @@ class Server:
 
         #TODO: self.apply_command/reply_to_clients(self.last_committed)
 
+    def run_command_follower(self, leader_last_applied):
+        """
+        Runs through the items in the log ready to be applied to the state machine, executing them each one by one
+        @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
+        @:return: Void
+        """
+        for index in range(self.last_applied + 1, leader_last_applied + 1):
+            entry = self.log[index]
+            command = entry[0][0]
+            content = entry[0][1]
+            if command == 'put':
+                key = content[0]
+                value = content[1]
+                self.put_into_store(key, value)
+        self.last_applied = leader_last_applied
 
     def get_new_election_timeout(self):
         """
@@ -264,8 +279,8 @@ class Server:
             prevLogTerm = 0
 
         entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 1 + 10]
-        print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " follower's match index=" + str(self.log[self.match_index[replica_id]]) + " SENDING: " + str(entries_to_send) + " CommitIndex = " + str(self.commit_index) + "\n"
-        app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
+        #print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " follower's match index=" + str(self.log[self.match_index[replica_id]]) + " SENDING: " + str(entries_to_send) + " CommitIndex = " + str(self.commit_index) + "\n"
+        app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.last_applied)
 
         self.send(app_entry)
 
@@ -304,6 +319,7 @@ class Server:
             self.current_term = heart_beat.term
             self.leader_id = heart_beat.leader
             self.get_new_election_timeout()
+            self.run_command_follower(msg['leader_last_applied'])
             hb_ack = heart_beat.create_heart_beat_ACK_message(self.id)
             self.send(hb_ack)
 
@@ -337,10 +353,10 @@ class Server:
 
         self.get_new_election_timeout()
 
-
         if len(self.log) == 0:
             self.log = logEntry['entries']
             self.commit_index = len(self.log) - 1
+            self.run_command_follower(logEntry['leader_last_applied'])
 
         # if leader_prev_log_term = 0:
         #     self.log =
@@ -348,19 +364,21 @@ class Server:
 
 
         else:
-            print str(self.id) + "at prevIndex Entry= " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(
-                len(self.log)) + " RECEIVED ENTRIES: " + str(logEntry['entries']) + " CommitIndex = " + str(
-                self.commit_index) + "\n"
+            # print str(self.id) + "at prevIndex Entry= " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(
+            #     len(self.log)) + " RECEIVED ENTRIES: " + str(logEntry['entries']) + " CommitIndex = " + str(
+            #     self.commit_index) + "\n"
 
             # if len(self.log) - 1 > leader_prev_log_index:
-            print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
+            #print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                 #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
                 self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
-                print str(self.id) + " ADDED TO FOLLOWER LOG!!! -> " + str(self.log)
+                #print str(self.id) + " ADDED TO FOLLOWER LOG!!! -> " + str(self.log)
 
-                print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
+                #print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
                 self.commit_index = len(self.log) - 1
+                self.run_command_follower(logEntry['leader_last_applied'])
+
                 reply = {'src': self.id,
                          'dst': message['src'],
                          'type': "appendACK",
@@ -368,7 +386,6 @@ class Server:
                          'follower_last_applied': self.last_applied,
                          'follower_commit_index': self.commit_index}
                 self.send(reply)
-
 
             elif self.log[leader_prev_log_index][1] != leader_prev_log_term:
                 # TODO: send fail, do not add to log
@@ -542,7 +559,7 @@ class Server:
         :return: Void
         """
         print str(self.id) + "~~~HEARTBEAT~~~"
-        message = Message.create_heart_beat_message(self.id, self.current_term)
+        message = Message.create_heart_beat_message(self.id, self.current_term, self.last_applied)
         self.reset_heartbeat_timeout()
         self.get_new_election_timeout()
         self.send(message)

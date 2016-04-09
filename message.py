@@ -66,12 +66,12 @@ class Message:
                 'type': "voteRequest", 'MID': 1234567890, 'term': term}
 
     @staticmethod
-    def create_heart_beat_message(src, term):
+    def create_heart_beat_message(src, term, leader_last_applied):
         return {'src': src, 'dst': "FFFF", 'leader': src,
-                'type': 'heartbeat', 'MID': 1234567890, 'term': term}
+                'type': 'heartbeat', 'MID': 1234567890, 'term': term, 'leader_last_applied': leader_last_applied}
 
     @staticmethod
-    def create_append_entry_message(src, dst, term, prevLogIndex, prevLogTerm, entries, leaderCommit):
+    def create_append_entry_message(src, dst, term, prevLogIndex, prevLogTerm, entries, leader_last_applied):
         return {'src': src,
                 'dst': dst,
                 'leader': src,
@@ -81,7 +81,7 @@ class Message:
                 'logEntry': {'prevLogIndex': prevLogIndex,
                              'prevLogTerm': prevLogTerm,
                              'entries': entries,
-                             'leaderCommit': leaderCommit}}
+                             'leader_last_applied': leader_last_applied}}
 
     def create_heart_beat_ACK_message(self, replica_id):
         message = self.create_response_message('heartbeatACK')
