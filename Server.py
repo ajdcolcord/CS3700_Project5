@@ -21,7 +21,7 @@ class Server:
         self.replica_ids = replica_ids
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.heartbeat_timeout = 10
+        self.heartbeat_timeout = 40
         self.heartbeat_timeout_start = datetime.datetime.now()
         self.current_term = 0
         self.voted_for = None
