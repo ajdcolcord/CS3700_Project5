@@ -467,7 +467,7 @@ class Server:
             self.run_command_leader()
 
             self.last_applied = self.commit_index
-            for x in range(self.failed_queue):
+            for x in range(len(self.failed_queue)):
                 msg = self.failed_queue[x][0]
                 tries = self.failed_queue[x][1]
                 value = self.key_value_store.get(msg['key'])
