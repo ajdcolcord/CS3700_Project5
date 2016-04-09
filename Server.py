@@ -72,8 +72,10 @@ class Server:
 
         elif msg['type'] == 'heartbeatACK':
             #print "~~~~~~~HEARTBEAT_ACK++++++"
-            message = Message.create_message_from_json(msg)
+            # message = Message.create_message_from_json(msg)
             self.get_new_election_timeout()
+            self.match_index[msg['src']] = msg['follower_commit_index']
+
             # TODO: commit log entry yet?????
 
         if msg['type'] == 'heartbeat':
@@ -292,7 +294,8 @@ class Server:
         prevLogIndex = self.match_index[replica_id]
 
         if prevLogIndex >= 0:
-            prevLogTerm = self.log[self.match_index[replica_id]][1]
+            prevLogTerm = self.log[self.match_index[replica_id]][1] #gets the previous term from log
+
         else:
             prevLogIndex = -1
             prevLogTerm = 0
@@ -341,7 +344,7 @@ class Server:
             self.leader_id = heart_beat.leader
             self.get_new_election_timeout()
             self.run_command_follower(msg['leader_last_applied'])
-            hb_ack = heart_beat.create_heart_beat_ACK_message(self.id)
+            hb_ack = heart_beat.create_heart_beat_ACK_message(self.id, self.commit_index)
             self.send(hb_ack)
 
     def receive_vote_request_as_follower(self, msg):

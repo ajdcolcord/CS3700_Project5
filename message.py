@@ -83,10 +83,10 @@ class Message:
                              'entries': entries,
                              'leader_last_applied': leader_last_applied}}
 
-    def create_heart_beat_ACK_message(self, replica_id):
+    def create_heart_beat_ACK_message(self, replica_id, follow_commit_index):
         message = self.create_response_message('heartbeatACK')
         return {'src': replica_id, 'dst': message.dst, 'leader': message.dst,
-                'type': 'heartbeatACK', 'MID': 1234567890, 'term': message.term}
+                'type': 'heartbeatACK', 'MID': 1234567890, 'term': message.term, 'follower_commit_index': follow_commit_index}
 
     def create_redirect_message(self, leader_id):
         message = self.create_response_message('redirect')
