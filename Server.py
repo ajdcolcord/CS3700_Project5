@@ -51,6 +51,14 @@ class Server:
         if msg['type'] in ['get', 'put']:
             message = Message.create_message_from_json(msg)
             self.add_to_client_queue(message)
+            value = self.key_value_store.get(Message.key)
+            if value:
+                response = message.create_response_message('ok')
+                send(response.create_ok_get_message(value))
+            else:
+                response = message.create_response_message('fail')
+                send(response.create_fail_message())
+
 
         elif msg['type'] == 'heartbeatACK':
             #print "~~~~~~~HEARTBEAT_ACK++++++"
@@ -158,17 +166,17 @@ class Server:
             mess_id = entry[3]
             command = entry[0][0]
             content = entry[0][1]
-            if command == 'get':
-                key = content
-                if self.key_value_store.get(key):
-                    message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
-                               'type': 'ok', 'MID': mess_id, 'value': self.key_value_store[key]}
-                    self.send(message)
-                else:
-                    message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
-                               'type': 'fail', 'MID': mess_id}
-                    self.send(message)
-            elif command == 'put':
+            # if command == 'get':
+            #     key = content
+            #     if self.key_value_store.get(key):
+            #         message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
+            #                    'type': 'ok', 'MID': mess_id, 'value': self.key_value_store[key]}
+            #         self.send(message)
+            #     else:
+            #         message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
+            #                    'type': 'fail', 'MID': mess_id}
+            #         self.send(message)
+            if command == 'put':
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
