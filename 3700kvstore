@@ -17,126 +17,12 @@ time.sleep(0.2)
 SERVER.get_new_election_timeout()
 
 
-def leader_receive_message(msg):
-    """
-    All Leader Message Receiving
-    """
-    if msg['type'] in ['get', 'put']:
-        message = Message.create_message_from_json(msg)
-        SERVER.add_to_client_queue(message)
-        # SERVER.client_action(message)
-
-    elif msg['type'] == 'heartbeatACK':
-        print "~~~~~~~HEARTBEAT_ACK++++++"
-        message = Message.create_message_from_json(msg)
-        SERVER.get_new_election_timeout()
-        # TODO: commit log entry yet?????
-
-    if msg['type'] == 'heartbeat':
-        message = Message.create_message_from_json(msg)
-
-        if message.term > SERVER.current_term:
-            SERVER.become_follower(message.leader)
-
-    if msg['type'] == 'voteRequest':
-        message = Message.create_message_from_json(msg)
-        if message.term > SERVER.current_term:
-            SERVER.become_follower(msg['leader'])
-
-    if msg['type'] == 'appendACK':
-        SERVER.get_new_election_timeout()
-        follow_source = msg['src']
-        follower_commit_index = int(msg['follower_commit_index'])
-        #follow_last_applied = int(msg['follower_last_applied'])
-        SERVER.match_index[follow_source] = follower_commit_index
-        print str(SERVER.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg) + "matchIndex =" + str(SERVER.match_index[follow_source])
-
-
-        # if quorum size reached at last_applied_index + 1
-        #if SERVER.quorum_size
-        agreement_size = 1
-        for replica in SERVER.match_index:
-            print str(SERVER.id) + " matchIndex for " + str(replica) + " = " + str(SERVER.match_index[replica]) + ", prevCommitIndex = " + str(SERVER.commit_index)
-            if SERVER.match_index[replica] >= SERVER.commit_index:
-                agreement_size += 1
-
-        if agreement_size == SERVER.quorum_size:
-            #TODO: SERVER.apply_command/reply_to_clients(SERVER.last_committed)
-            SERVER.run_command_leader()
-
-            SERVER.last_applied = SERVER.commit_index
-
-            print str(SERVER.id) + "agreement size reached"
-
-        print str(SERVER.id) + ": got APPEND ACK"
-
-def candidate_receive_message(msg):
-    """
-    All Candidate Message Receiving
-    """
-    if msg['type'] == 'vote':
-        print str(SERVER.id) + ": Got Vote Message----------"
-        message = Message.create_message_from_json(msg)
-        SERVER.receive_vote(message)
-
-    if msg['type'] == 'heartbeat':
-        print str(SERVER.id) + "got ~~~HEARTBEAT~~~"
-        heart_beat = Message.create_message_from_json(msg)
-
-        if heart_beat.term >= SERVER.current_term:
-            SERVER.current_term = heart_beat.term
-            SERVER.become_follower(heart_beat.leader)
-
-    if msg['type'] == 'voteRequest':
-        message = Message.create_message_from_json(msg)
-        if message.term > SERVER.current_term:
-            SERVER.become_follower(msg['leader'])
-
-def follower_receive_message(msg):
-    """
-    All Follower Message Receiving
-    """
-    if msg['type'] == 'heartbeat':
-        if msg['term'] >= SERVER.current_term:
-            print str(SERVER.id) + "got ~~~HEARTBEAT~~~"
-            heart_beat = Message.create_message_from_json(msg)
-            SERVER.current_term = heart_beat.term
-            SERVER.leader_id = heart_beat.leader
-            SERVER.get_new_election_timeout()
-            hb_ack = heart_beat.create_heart_beat_ACK_message(SERVER.id)
-            SERVER.send(hb_ack)
-
-    if msg['type'] == 'voteRequest':
-        print str(SERVER.id) + ": RECEIVED VOTE REQUEST from: " + str(msg['src']) + " time=" + str(
-            datetime.datetime.now())
-
-        vote_req_message = Message.create_message_from_json(msg)
-
-        if vote_req_message.term >= SERVER.current_term:
-            if SERVER.voted_for is None or SERVER.voted_for == vote_req_message.src:
-                # TODO: and canddiates log is at least up to date as receiver's log, grand vote
-                SERVER.send_vote(vote_req_message)
-                SERVER.get_new_election_timeout()
-
-    if msg['type'] in ['get', 'put']:
-        message = Message.create_message_from_json(msg)
-        redirect_message = message.create_redirect_message(SERVER.leader_id)
-
-        SERVER.send(redirect_message)
-
-    if msg['type'] == 'appendEntry':
-
-        SERVER.receive_append_entry(msg)
-
-
 while True:
     if SERVER.election_timedout():
-        print str(SERVER.id) + ": election_timedout"
-
         SERVER.initiate_election()
 
     if SERVER.node_state == "L":
-        print str(SERVER.id) + " LEADER"
+        print str(SERVER.id) + ": LEADER"
         if SERVER.heart_beat_timedout():
             if SERVER.last_applied < len(SERVER.log) - 1:
                 SERVER.send_append_entries()
@@ -146,27 +32,29 @@ while True:
                     SERVER.send_append_entries()
                 else:
                     SERVER.send_heartbeat()
-
-    print str(SERVER.id) + ": Node State = " + str(SERVER.node_state)
+    if SERVER.node_state == "F":
+        print str(SERVER.id) + ": FOLLOWER"
+    if SERVER.node_state == "C":
+        print str(SERVER.id) + ": CANDIDATE"
 
     ready = select.select([SERVER.sock], [], [], 0.01)[0]
 
     if SERVER.sock in ready:
         msg_raw = SERVER.sock.recv(32768)
 
-        #if len(msg_raw) == 0:
-        #    continue
+        if len(msg_raw) == 0:
+           continue
 
         msg = json.loads(msg_raw)
 
         if SERVER.node_state == "L":
-            leader_receive_message(msg)
+            SERVER.leader_receive_message(msg)
 
         if SERVER.node_state == "C":
-            candidate_receive_message(msg)
+            SERVER.candidate_receive_message(msg)
 
         if SERVER.node_state == "F":
-            follower_receive_message(msg)
+            SERVER.follower_receive_message(msg)
 
         # Handle noop messages. This may be removed from your final implementation
         elif msg['type'] == 'noop':

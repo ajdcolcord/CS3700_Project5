@@ -42,6 +42,83 @@ class Server:
         for replica in replica_ids:
             self.match_index[replica] = -1
 
+    def leader_receive_message(self, msg):
+        """
+        All Leader Message Receiving
+        @:param msg - the JSON message received
+        @:return: Void
+        """
+        if msg['type'] in ['get', 'put']:
+            message = Message.create_message_from_json(msg)
+            self.add_to_client_queue(message)
+            # self.client_action(message)
+
+        elif msg['type'] == 'heartbeatACK':
+            print "~~~~~~~HEARTBEAT_ACK++++++"
+            message = Message.create_message_from_json(msg)
+            self.get_new_election_timeout()
+            # TODO: commit log entry yet?????
+
+        if msg['type'] == 'heartbeat':
+            message = Message.create_message_from_json(msg)
+
+            if message.term > self.current_term:
+                self.become_follower(message.leader)
+
+        if msg['type'] == 'voteRequest':
+            message = Message.create_message_from_json(msg)
+            if message.term > self.current_term:
+                self.become_follower(msg['leader'])
+
+        if msg['type'] == 'appendACK':
+            self.receive_append_ack(msg)
+
+    def candidate_receive_message(self, msg):
+        """
+        All Candidate Message Receiving
+        @:param msg - the JSON message received
+        @:return: Void
+        """
+        if msg['type'] == 'vote':
+            print str(self.id) + ": Got Vote Message----------"
+            message = Message.create_message_from_json(msg)
+            self.receive_vote(message)
+
+        if msg['type'] == 'heartbeat':
+            print str(self.id) + "got ~~~HEARTBEAT~~~"
+            heart_beat = Message.create_message_from_json(msg)
+
+            if heart_beat.term >= self.current_term:
+                self.current_term = heart_beat.term
+                self.become_follower(heart_beat.leader)
+
+        if msg['type'] == 'voteRequest':
+            message = Message.create_message_from_json(msg)
+            if message.term > self.current_term:
+                self.become_follower(msg['leader'])
+
+    def follower_receive_message(self, msg):
+        """
+        All Follower Message Receiving
+        @:param msg - the JSON message received
+        @:return: Void
+        """
+        if msg['type'] == 'heartbeat':
+            self.receive_heartbeat(msg)
+
+        if msg['type'] == 'voteRequest':
+            self.receive_vote_request_as_follower(msg)
+
+        if msg['type'] in ['get', 'put']:
+            message = Message.create_message_from_json(msg)
+            redirect_message = message.create_redirect_message(self.leader_id)
+
+            self.send(redirect_message)
+
+        if msg['type'] == 'appendEntry':
+            self.receive_append_entry(msg)
+
+
     def add_to_client_queue(self, message):
         """
         Adds a new incoming message (get or put) from a client into the 'buffer' - client_queue
@@ -96,7 +173,7 @@ class Server:
                            'type': 'ok', 'MID': mess_id}
                 self.send(message)
 
-        #TODO: SERVER.apply_command/reply_to_clients(SERVER.last_committed)
+        #TODO: self.apply_command/reply_to_clients(self.last_committed)
 
 
     def get_new_election_timeout(self):
@@ -213,6 +290,37 @@ class Server:
         self.get_new_election_timeout()
         self.send(app_entry)
 
+    def receive_heartbeat(self, msg):
+        """
+        Run the functions necessary when receiving a heartbeat, only if the heartbeat is 'valid'
+        @:param msg - the message (json) from the leader
+        @:return: Void
+        """
+        if msg['term'] >= self.current_term:
+            print str(self.id) + "got ~~~HEARTBEAT~~~"
+            heart_beat = Message.create_message_from_json(msg)
+            self.current_term = heart_beat.term
+            self.leader_id = heart_beat.leader
+            self.get_new_election_timeout()
+            hb_ack = heart_beat.create_heart_beat_ACK_message(self.id)
+            self.send(hb_ack)
+
+    def receive_vote_request_as_follower(self, msg):
+        """
+        Run the desired functions when receiving a vote request from a Candidate
+        @:param msg - the json message received from the candidate
+        @:return: Void
+        """
+        print str(self.id) + ": RECEIVED VOTE REQUEST from: " + str(msg['src']) + " time=" + str(datetime.datetime.now())
+
+        vote_req_message = Message.create_message_from_json(msg)
+
+        if vote_req_message.term >= self.current_term:
+            if self.voted_for is None or self.voted_for == vote_req_message.src:
+                # TODO: and canddiates log is at least up to date as receiver's log, grand vote
+                self.send_vote(vote_req_message)
+                self.get_new_election_timeout()
+
     def receive_append_entry(self, message):
         """
         Receives a new append entry, and decides wether or not to store the value into our log (follower)
@@ -281,6 +389,37 @@ class Server:
     #
     #     if self.log[append_entry_message.commit_index][1] != append_entry_message.term:
     #         self.log = self.log[:append_entry_message.commit_index - 1]
+
+    def receive_append_ack(self, msg):
+        """
+        Determine what to do when receiving an append_entry acknowledgement from a follower
+        @:param msg - the json message received from the follower
+        """
+        self.get_new_election_timeout()
+        follow_source = msg['src']
+        follower_commit_index = int(msg['follower_commit_index'])
+        # follow_last_applied = int(msg['follower_last_applied'])
+        self.match_index[follow_source] = follower_commit_index
+        print str(self.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg) + "matchIndex =" + str(self.match_index[follow_source])
+
+        # if quorum size reached at last_applied_index + 1
+        # if self.quorum_size
+        agreement_size = 1
+        for replica in self.match_index:
+            print str(self.id) + " matchIndex for " + str(replica) + " = " + str(
+                self.match_index[replica]) + ", prevCommitIndex = " + str(self.commit_index)
+            if self.match_index[replica] >= self.commit_index:
+                agreement_size += 1
+
+        if agreement_size == self.quorum_size:
+            # TODO: self.apply_command/reply_to_clients(self.last_committed)
+            self.run_command_leader()
+
+            self.last_applied = self.commit_index
+
+            print str(self.id) + "agreement size reached"
+
+        print str(self.id) + ": got APPEND ACK"
 
     def put_into_store(self, key, value):
         """
