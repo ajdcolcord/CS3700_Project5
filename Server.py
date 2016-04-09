@@ -266,7 +266,7 @@ class Server:
             prevLogTerm = 0
 
         entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 1 + 10]
-        print str(self.id) + ": Entries to send: " + str(entries_to_send) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
+        print str(self.id) + ": Entries to send: " + str(len(entries_to_send)) + " Log=" + str(self.log) + " CommitIndex = " + str(self.commit_index)
         app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.commit_index)
 
         self.send(app_entry)
@@ -350,8 +350,8 @@ class Server:
             # if len(self.log) - 1 > leader_prev_log_index:
             print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
-                #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
-                self.log.extend(logEntry['entries'])
+                self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
+                #self.log.extend(logEntry['entries'])
                 print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
                 self.commit_index = len(self.log) - 1
                 reply = {'src': self.id,
