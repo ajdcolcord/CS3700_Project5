@@ -421,7 +421,7 @@ class Server:
                          'type': "appendACK",
                          'leader': self.leader_id,
                          'follower_last_applied': self.last_applied,
-                         'follower_commit_index': self.commit_index}
+                         'follower_commit_index': self.commit_index - 1}
                 self.send(reply)
             # else:
             #     # TODO: send fail, do not add to log
