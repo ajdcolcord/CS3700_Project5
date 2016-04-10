@@ -51,11 +51,17 @@ class Server:
         @:return: Void
         """
         if msg['type'] in ['get', 'put']:
-            # message = Message.create_message_from_json(msg)
-            self.add_to_client_queue(msg)
             value = self.key_value_store.get(msg['key'])
+            put_exists = False
+
+            for message in self.client_queue:
+                if message['type'] == 'put':
+                    put_exists = message['key'] == msg['key']
+
+
+            self.add_to_client_queue(msg)
             if msg['type'] == 'get':
-                if value:
+                if value and not put_exists:                          #TODO: and put request for this key is not in client queue:
                     # print 'FOUND VALUE: ' + str(value)
                     response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                             "type": "ok", "MID": msg['MID'], "value": str(value)}
