@@ -23,7 +23,10 @@ while True:
 
     # new check
     if SERVER.last_applied == SERVER.commit_index:
+        print 'send'
+
         SERVER.send_append_entries()
+        print '..'
 
     if SERVER.node_state == "L":
         # print str(SERVER.id) + ": L"
