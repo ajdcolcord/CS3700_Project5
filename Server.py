@@ -479,6 +479,8 @@ class Server:
             # TODO: self.apply_command/reply_to_clients(self.last_committed)
             self.run_command_leader()
 
+            entries_to_delete = []
+
             self.last_applied = self.commit_index
             for x in range(len(self.failed_queue)):
                 print "FAILED QUEUE INDEX " + str(x)
@@ -493,22 +495,34 @@ class Server:
                         response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                                     "type": "ok", "MID": msg['MID'], "value": str(value)}
                         self.send(response)
-                        del self.failed_queue[x]
+                        entries_to_delete.append(self.failed_queue[x])
 
                         # response = message.create_response_message('ok')
                         # self.send(response.create_ok_get_message(value))
                     else:
                         print "DIDNT FIND VALUE: " + str(value)
                         self.failed_queue[x] = (self.failed_queue[x][0], self.failed_queue[x][1] + 1)
-                        
-            i = len(self.failed_queue) - 1
-            while i >= 0:
-                if self.failed_queue[i][1] >= 5:
-                    response = {"src": self.id, "dst": msg['src'], "leader": self.id,
-                                "type": "fail", "MID": msg['MID'], "value": ""}
-                    del self.failed_queue[i]
-                    self.send(response)
-                i -= 1
+
+                        if self.failed_queue[x][1] >= 5:
+                            response = {"src": self.id, "dst": msg['src'], "leader": self.id,
+                                        "type": "fail", "MID": msg['MID'], "value": ""}
+                            # del self.failed_queue[x]
+                            entries_to_delete.append(self.failed_queue[x])
+
+                            self.send(response)
+
+            for entry in entries_to_delete:
+                self.failed_queue.remove(entry)
+
+
+            # i = len(self.failed_queue) - 1
+            # while i >= 0:
+            #     if self.failed_queue[i][1] >= 5:
+            #         response = {"src": self.id, "dst": msg['src'], "leader": self.id,
+            #                     "type": "fail", "MID": msg['MID'], "value": ""}
+            #         del self.failed_queue[i]
+            #         self.send(response)
+            #     i -= 1
 
 
 
