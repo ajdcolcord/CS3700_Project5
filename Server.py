@@ -294,6 +294,8 @@ class Server:
         prevLogIndex = self.match_index[replica_id]
 
         if prevLogIndex > len(self.log) - 1:
+            self.match_index[replica_id] = self.last_applied
+            prevLogIndex = self.match_index[replica_id]
             app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 51], self.last_applied)
             self.send(app_entry)
         else:
