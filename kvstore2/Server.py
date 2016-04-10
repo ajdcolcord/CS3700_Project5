@@ -204,7 +204,7 @@ class Server:
                                 "type": "fail", "MID": mess_id, "value": ""}
                     self.send(response)
 
-            if command == 'put':
+            elif command == 'put':
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
