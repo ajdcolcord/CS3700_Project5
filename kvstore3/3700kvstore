@@ -22,7 +22,7 @@ while True:
         SERVER.initiate_election()
 
     # new check
-    if SERVER.last_applied == SERVER.commit_index:
+    if SERVER.last_applied == SERVER.commit_index and SERVER.last_applied < len(SERVER.log) - 1:
         print 'send' + str(datetime.datetime.now())
 
         SERVER.send_append_entries()
