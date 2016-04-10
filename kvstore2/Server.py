@@ -89,7 +89,13 @@ class Server:
         if msg['type'] == 'voteRequest':
             message = Message.create_message_from_json(msg)
             if message.term > self.current_term:
-                self.become_follower(msg['leader'])
+                if len(self.log):
+                    if msg['last_entry_term'] >= self.log[-1][1] and msg['log_size'] >= len(self.log):
+                        self.become_follower(msg['leader'])
+                        #self.voted_for = msg['src']
+                else:
+                    self.become_follower(msg['leader'])
+                    #self.voted_for = msg['src']
 
         if msg['type'] == 'appendACK':
             self.receive_append_ack(msg)
@@ -367,9 +373,13 @@ class Server:
 
         if vote_req_message.term >= self.current_term:
             if self.voted_for is None or self.voted_for == vote_req_message.src:
-                # TODO: and canddiates log is at least up to date as receiver's log, grand vote
-                self.send_vote(vote_req_message)
-                self.get_new_election_timeout()
+                if len(self.log):
+                    if msg['last_entry_term'] >= self.log[-1][1] and msg['log_size'] >= len(self.log):
+                        self.send_vote(vote_req_message)
+                        self.get_new_election_timeout()
+                else:
+                    self.send_vote(vote_req_message)
+                    self.get_new_election_timeout()
 
     def receive_append_entry(self, message):
         """
@@ -568,7 +578,7 @@ class Server:
         # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
 
         vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
-        json_message = vote.create_vote_request_message(self.id, self.current_term)
+        json_message = vote.create_vote_request_message(self.id, self.current_term, self.log[-1][1], len(self.log))
         self.voted_for = self.id
         self.send(json_message)
 
