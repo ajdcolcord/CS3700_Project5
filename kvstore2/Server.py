@@ -56,7 +56,7 @@ class Server:
             value = self.key_value_store.get(msg['key'])
             if msg['type'] == 'get':
                 if value:
-                    print 'FOUND VALUE: ' + str(value)
+                    # print 'FOUND VALUE: ' + str(value)
                     response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                             "type": "ok", "MID": msg['MID'], "value": str(value)}
                     self.send(response)
@@ -64,7 +64,7 @@ class Server:
                     # response = message.create_response_message('ok')
                     # self.send(response.create_ok_get_message(value))
                 else:
-                    print "DIDNT FIND VALUE: " + str(value)
+                    # print "DIDNT FIND VALUE: " + str(value)
                     response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                      "type": "ok", "MID": msg['MID'], "value": ""}
                     # self.failed_queue.append((msg, 0))
@@ -300,7 +300,7 @@ class Server:
             self.send(app_entry)
         else:
             if prevLogIndex >= 0:
-                print str(self.id) + ": LOG SIZE = " + str(len(self.log)) + " prevLogIndex = " + str(prevLogIndex)
+                # print str(self.id) + ": LOG SIZE = " + str(len(self.log)) + " prevLogIndex = " + str(prevLogIndex)
                 prevLogItem = self.log[prevLogIndex]
                 prevLogTerm = prevLogItem[1] #gets the previous term from log
 
@@ -517,7 +517,7 @@ class Server:
         @:return: Void
         """
         self.key_value_store[key] = value
-        print str(self.id) + ": Added " + str(key) + " with value " + str(value)
+        # print str(self.id) + ": Added " + str(key) + " with value " + str(value)
 
     def send(self, json_message):
         """
@@ -525,7 +525,7 @@ class Server:
         @:param json_message: the json message to send on the socket
         """
         try:
-            print str(self.id) + " SENDING MESSAGE of type  " + json_message['type'] + " -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+            # print str(self.id) + " SENDING MESSAGE of type  " + json_message['type'] + " -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             self.sock.send(json.dumps(json_message) + '\n')
         except:
             raise Exception("Could not successfully send message" + str(json_message))
@@ -630,7 +630,7 @@ class Server:
         Execute the actions needed to change to a leader status, resetting timeouts, leader ID, etc.
         @:return: Void
         """
-        print str(self.id) + "CHANGED TO LEADER!!!!!!"
+        # print str(self.id) + "CHANGED TO LEADER!!!!!!"
         self.get_new_election_timeout()
         self.node_state = "L"
         self.leader_id = self.id

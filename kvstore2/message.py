@@ -40,13 +40,13 @@ class Message:
         return Message(self.dst, self.src, self.leader, type, self.message_id, term=self.term)
 
     def create_ok_get_message(self, value):
-        print 'createOK GET'
+        # print 'createOK GET'
         message = self.create_response_message('ok')
         return {'src': message.src, 'dst': message.dst, 'leader':message.leader,
                 'type': message.type, 'MID': message.message_id, 'value': value}
 
     def create_ok_put_message(self):
-        print 'createOK'
+        # print 'createOK'
         message = self.create_response_message('ok')
         return {'src': message.src, 'dst': message.dst, 'leader': message.leader,
                 'type': message.type, 'MID': message.message_id}

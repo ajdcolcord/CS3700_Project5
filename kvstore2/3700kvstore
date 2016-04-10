@@ -22,7 +22,7 @@ while True:
         SERVER.initiate_election()
 
     if SERVER.node_state == "L":
-        print str(SERVER.id) + ": L"
+        # print str(SERVER.id) + ": L"
         if SERVER.heart_beat_timedout():
             if SERVER.last_applied < len(SERVER.log) - 1:
                 SERVER.send_append_entries()
@@ -32,10 +32,10 @@ while True:
                     SERVER.send_append_entries()
                 else:
                     SERVER.send_heartbeat()
-    if SERVER.node_state == "F":
-        print str(SERVER.id) + ": F"
-    if SERVER.node_state == "C":
-        print str(SERVER.id) + ": C"
+    # if SERVER.node_state == "F":
+    #     print str(SERVER.id) + ": F"
+    # if SERVER.node_state == "C":
+    #     print str(SERVER.id) + ": C"
 
     ready = select.select([SERVER.sock], [], [], 0.01)[0]
 
