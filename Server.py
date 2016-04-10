@@ -481,6 +481,8 @@ class Server:
 
             self.last_applied = self.commit_index
             for x in range(len(self.failed_queue)):
+                print "FAILED QUEUE INDEX " + str(x)
+                print "FAILED_QUEUE: " + str(self.failed_queue[x])
                 msg = self.failed_queue[x][0]
                 tries = self.failed_queue[x][1]
                 value = self.key_value_store.get(msg['key'])
@@ -498,11 +500,15 @@ class Server:
                     else:
                         print "DIDNT FIND VALUE: " + str(value)
                         self.failed_queue[x] = (self.failed_queue[x][0], self.failed_queue[x][1] + 1)
-                        if self.failed_queue[x][1] >= 5:
-                            response = {"src": self.id, "dst": msg['src'], "leader": self.id,
-                                        "type": "fail", "MID": msg['MID'], "value": ""}
-                            del self.failed_queue[x]
-                            self.send(response)
+                        
+            i = len(self.failed_queue) - 1
+            while i >= 0:
+                if self.failed_queue[i][1] >= 5:
+                    response = {"src": self.id, "dst": msg['src'], "leader": self.id,
+                                "type": "fail", "MID": msg['MID'], "value": ""}
+                    del self.failed_queue[i]
+                    self.send(response)
+                i -= 1
 
 
 
