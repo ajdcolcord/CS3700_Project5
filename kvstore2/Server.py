@@ -58,6 +58,13 @@ class Server:
                 if message['type'] == 'put':
                     put_exists = message['key'] == msg['key']
 
+            for entry in self.log[self.last_applied + 1:]:
+                command = entry[0][0]
+                content = entry[0][1]
+                if command == 'put' and content[0] == msg['key']:
+                    put_exists = True
+                
+
             # print str(self.id) + ": Received From Client~~: " + str(msg)
             self.add_to_client_queue(msg)
 
