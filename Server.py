@@ -526,7 +526,7 @@ class Server:
                         print "DIDNT FIND VALUE: " + str(value)
                         self.failed_queue[x] = (self.failed_queue[x][0], self.failed_queue[x][1] + 1)
 
-                        if self.failed_queue[x][1] >= 5:
+                        if self.failed_queue[x][1] >= 1:
                             response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                                         "type": "fail", "MID": msg['MID'], "value": ""}
                             # del self.failed_queue[x]
