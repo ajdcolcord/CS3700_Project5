@@ -518,7 +518,8 @@ class Server:
 
         self.key_value_store[key] = value
 
-        print str(self.id) + ": Putting new value at: " + str(key) + " with value (new): " + str(value) + " store now: " + str(self.key_value_store[key]) + " was " + str(prior_key) + "\n\n"
+        if self.node_state == "L":
+            print str(self.id) + ": Putting new value at: " + str(key) + " with value (new): " + str(value) + " store now: " + str(self.key_value_store[key]) + " was " + str(prior_key) + "\n\n"
 
 
     def send(self, json_message):
