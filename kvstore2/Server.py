@@ -66,6 +66,9 @@ class Server:
                     # print 'FOUND VALUE: ' + str(value)
                     response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                             "type": "ok", "MID": msg['MID'], "value": str(value)}
+
+                    print str(self.id) + ": Sending (leader_receiving_message) out message for put: " + str(msg) + "\n"
+
                     self.send(response)
 
                     # response = message.create_response_message('ok')
@@ -216,7 +219,7 @@ class Server:
                 self.put_into_store(key, value)
                 message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                            'type': 'ok', 'MID': mess_id}
-                print str(self.id) + ": Sending (run_command_leader) out message for put: " + str(message) + "\n\n"
+                print str(self.id) + ": Sending (run_command_leader) out message for put: " + str(message) + "\n"
                 self.send(message)
 
         #TODO: self.apply_command/reply_to_clients(self.last_committed)
@@ -519,7 +522,7 @@ class Server:
         self.key_value_store[key] = value
 
         if self.node_state == "L":
-            print str(self.id) + ": Putting new value at: " + str(key) + " with value (new): " + str(value) + " store now: " + str(self.key_value_store[key]) + " was " + str(prior_key) + "\n\n"
+            print str(self.id) + ": Putting new value at: " + str(key) + " with value (new): " + str(value) + " store now: " + str(self.key_value_store[key]) + " was " + str(prior_key) + "\n"
 
 
     def send(self, json_message):
