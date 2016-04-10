@@ -26,7 +26,7 @@ while True:
         SERVER.pull_from_queue()
         if SERVER.last_applied < len(SERVER.log) - 1:
             SERVER.commit_index = len(SERVER.log) - 1
-            print 'send' + str(datetime.datetime.now()) + " LA: " + str(SERVER.last_applied) + " CI: " + str(SERVER.commit_index) + " LOG_SIZE: " + len(SERVER.log)
+            print 'send' + str(datetime.datetime.now()) + " LA: " + str(SERVER.last_applied) + " CI: " + str(SERVER.commit_index) + " LOG_SIZE: " + str(len(SERVER.log))
             SERVER.send_append_entries()
 
 
