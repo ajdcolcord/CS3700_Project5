@@ -53,16 +53,37 @@ class Server:
         if msg['type'] in ['get', 'put']:
             message = Message.create_message_from_json(msg)
             self.add_to_client_queue(message)
-            value = self.key_value_store.get(message.key)
             if msg['type'] == 'get':
-                if value:
-                    print 'FOUND VALUE: ' + str(value)
-                    response = {"src": self.id, "dst": msg['src'], "leader": self.id,
-                            "type": "ok", "MID": msg['MID'], "value": str(value)}
-                    self.send(response)
 
-                    # response = message.create_response_message('ok')
-                    # self.send(response.create_ok_get_message(value))
+                value = None
+
+                for i in range(len(self.log) - 1, self.last_applied - 1, -1):
+                    client_addr = self.log[i][2]
+                    mess_id = self.log[i][3]
+                    command = self.log[i][0][0]
+                    content = self.log[i][0][1]
+
+                    if command == 'put' and content[0] == msg['key']:
+                        value = content[1]
+                        print 'FOUND VALUE in log: ' + str(value)
+                        response = {"src": self.id, "dst": msg['src'], "leader": self.id,
+                                    "type": "ok", "MID": msg['MID'], "value": value}
+                        self.send(response)
+                        break
+
+
+
+
+                if not value:
+                    value = self.key_value_store.get(message.key)
+                    if value:
+                        print 'FOUND VALUE: ' + str(value)
+                        response = {"src": self.id, "dst": msg['src'], "leader": self.id,
+                                "type": "ok", "MID": msg['MID'], "value": str(value)}
+                        self.send(response)
+
+                        # response = message.create_response_message('ok')
+                        # self.send(response.create_ok_get_message(value))
                 else:
                     print "DIDNT FIND VALUE: " + str(value)
                     self.failed_queue.append((msg, 0))
@@ -490,6 +511,8 @@ class Server:
                 value = self.key_value_store.get(msg['key'])
 
                 if msg['type'] == 'get':
+
+
                     if value:
                         print 'FOUND VALUE: ' + str(value)
                         response = {"src": self.id, "dst": msg['src'], "leader": self.id,
@@ -513,16 +536,6 @@ class Server:
 
             for entry in entries_to_delete:
                 self.failed_queue.remove(entry)
-
-
-            # i = len(self.failed_queue) - 1
-            # while i >= 0:
-            #     if self.failed_queue[i][1] >= 5:
-            #         response = {"src": self.id, "dst": msg['src'], "leader": self.id,
-            #                     "type": "fail", "MID": msg['MID'], "value": ""}
-            #         del self.failed_queue[i]
-            #         self.send(response)
-            #     i -= 1
 
 
 
