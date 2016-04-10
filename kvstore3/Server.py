@@ -252,7 +252,9 @@ class Server:
         prevLogIndex = self.match_index[replica_id]
 
         if prevLogIndex > len(self.log) - 1:
-            app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 51], self.last_applied)
+            # app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 51], self.last_applied)
+            app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 2], self.last_applied)
+
             self.send(app_entry)
         else:
             if prevLogIndex >= 0:
@@ -263,7 +265,9 @@ class Server:
                 prevLogIndex = -1
                 prevLogTerm = 0
 
-            entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 51]
+            # entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 51]
+            entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 2]
+
             app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.last_applied)
 
             self.send(app_entry)
