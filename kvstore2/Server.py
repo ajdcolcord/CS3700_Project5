@@ -514,8 +514,10 @@ class Server:
         @:param value - String - the value to add at the location of key
         @:return: Void
         """
-        prior_key = self.key_value_store[key]
+        prior_key = self.key_value_store.get(key)
+
         self.key_value_store[key] = value
+
         print str(self.id) + ": Putting new value at: " + str(key) + " with value (new): " + str(value) + " store now: " + str(self.key_value_store[key]) + " was " + str(prior_key) + "\n\n"
 
 
