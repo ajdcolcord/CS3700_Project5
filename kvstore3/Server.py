@@ -21,7 +21,7 @@ class Server:
         self.replica_ids = replica_ids
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.heartbeat_timeout = 75
+        self.heartbeat_timeout = 100
         self.heartbeat_timeout_start = datetime.datetime.now()
         self.current_term = 0
         self.voted_for = None
@@ -332,18 +332,11 @@ class Server:
 
 
         else:
-            # print str(self.id) + "at prevIndex Entry= " + str(self.log[leader_prev_log_index]) + " ~~ FOLLOWER LOG = " + str(
-            #     len(self.log)) + " RECEIVED ENTRIES: " + str(logEntry['entries']) + " CommitIndex = " + str(
-            #     self.commit_index) + "\n"
 
-            # if len(self.log) - 1 > leader_prev_log_index:
-            #print str(self.id) + " COMPARING LEADERPREVLOGTERM " + str(leader_prev_log_term) + " TO MY TERM " + str(self.log[leader_prev_log_index][1])
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                 #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
                 self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
-                #print str(self.id) + " ADDED TO FOLLOWER LOG!!! -> " + str(self.log)
 
-                #print str(self.id) + ": ADDED ENTRIES INTO FOLLOWER LOG: " + str(self.log)
                 self.commit_index = len(self.log) - 1
                 self.run_command_follower(logEntry['leader_last_applied'])
 
@@ -364,31 +357,9 @@ class Server:
                          'leader': self.leader_id,
                          'follower_last_applied': self.last_applied,
                          'follower_commit_index': self.commit_index}
-                        # 'follower_commit_index': self.commit_index} NEWWWWWWWWWWW
 
                 self.send(reply)
-            # else:
-            #     # TODO: send fail, do not add to log
-            #     reply = {'src': self.id,
-            #              'dst': message['src'],
-            #              'type': "appendACK",
-            #              'leader': self.leader_id,
-            #              'follower_last_applied': self.last_applied,
-            #              'follower_commit_index': self.commit_index}
-            #     self.commit_index = len(self.log) - 1
-            #     self.send(reply)
 
-    # def receive_append_entry(self, append_entry_message):
-    #     if append_entry_message.term < self.term:
-    #         print ' '
-    #         # TODO: reply false
-    #     # if my log doesn't contain an entry contained at prevLogIndex whose term matches prevLogTerm
-    #     if self.log[append_entry_message.prev_log_index][1] != append_entry_message.prev_log_term:
-    #         print ' '
-    #         # TODO: reply false
-    #
-    #     if self.log[append_entry_message.commit_index][1] != append_entry_message.term:
-    #         self.log = self.log[:append_entry_message.commit_index - 1]
 
     def receive_append_ack(self, msg):
         """
@@ -413,11 +384,6 @@ class Server:
 
 
 
-
-            #print str(self.id) + "agreement size reached"
-
-        #print str(self.id) + ": got APPEND ACK"
-
     def put_into_store(self, key, value):
         """
         Store the given key and value into self.key_value_store
@@ -425,13 +391,7 @@ class Server:
         @:param value - String - the value to add at the location of key
         @:return: Void
         """
-        prior_key = self.key_value_store.get(key)
-
         self.key_value_store[key] = value
-
-        # if self.node_state == "L":
-        #     print str(self.id) + ": Putting new value at: " + str(key) + " with value (new): " + str(value) + " store now: " + str(self.key_value_store[key]) + " was " + str(prior_key) + "\n"
-
 
     def send(self, json_message):
         """
