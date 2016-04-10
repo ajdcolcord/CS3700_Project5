@@ -58,6 +58,7 @@ class Server:
                 if message['type'] == 'put':
                     put_exists = message['key'] == msg['key']
 
+            # print str(self.id) + ": Received From Client~~: " + str(msg)
             self.add_to_client_queue(msg)
 
             if msg['type'] == 'get':
@@ -75,6 +76,8 @@ class Server:
                     response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                      "type": "fail", "MID": msg['MID'], "value": ""}
                     self.send(response)
+
+
             # else:
             #     self.add_to_client_queue(msg)
 
@@ -213,6 +216,7 @@ class Server:
                 self.put_into_store(key, value)
                 message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                            'type': 'ok', 'MID': mess_id}
+                print str(self.id) + ": Sending (run_command_leader) out message for put: " + str(message) + "\n\n"
                 self.send(message)
 
         #TODO: self.apply_command/reply_to_clients(self.last_committed)
@@ -483,16 +487,10 @@ class Server:
         self.get_new_election_timeout()
         follow_source = msg['src']
         follower_commit_index = int(msg['follower_commit_index'])
-        # follow_last_applied = int(msg['follower_last_applied'])
         self.match_index[follow_source] = follower_commit_index
-        #print str(self.id) + ": RECEIVED APPEND_ACK FROM: " + str(follow_source) + str(msg) + "matchIndex =" + str(self.match_index[follow_source])
 
-        # if quorum size reached at last_applied_index + 1
-        # if self.quorum_size
         agreement_size = 1
         for replica in self.match_index:
-            #print str(self.id) + " matchIndex for " + str(replica) + " = " + str(
-                #self.match_index[replica]) + ", prevCommitIndex = " + str(self.commit_index)
             if self.match_index[replica] >= self.commit_index:
                 agreement_size += 1
 
@@ -501,28 +499,7 @@ class Server:
             self.run_command_leader()
 
             self.last_applied = self.commit_index
-            # for x in range(len(self.failed_queue)):
-            #     msg = self.failed_queue[x][0]
-            #     tries = self.failed_queue[x][1]
-            #     value = self.key_value_store.get(msg['key'])
-            #
-            #     if msg['type'] == 'get':
-            #         if value:
-            #             print 'FOUND VALUE: ' + str(value)
-            #             response = {"src": self.id, "dst": msg['src'], "leader": self.id,
-            #                         "type": "ok", "MID": msg['MID'], "value": str(value)}
-            #             self.send(response)
-            #             del self.failed_queue[x]
-            #
-            #             # response = message.create_response_message('ok')
-            #             # self.send(response.create_ok_get_message(value))
-            #         else:
-            #             print "DIDNT FIND VALUE: " + str(value)
-            #             self.failed_queue[x] = (self.failed_queue[x][0], self.failed_queue[x][1] + 1)
-            #             if self.failed_queue[x][1] >= 5:
-            #                 response = message.create_response_message('fail')
-            #                 del self.failed_queue[x]
-            #                 self.send(response.create_fail_message())
+
 
 
 
@@ -537,8 +514,10 @@ class Server:
         @:param value - String - the value to add at the location of key
         @:return: Void
         """
+        prior_key = self.key_value_store[key]
         self.key_value_store[key] = value
-        # print str(self.id) + ": Added " + str(key) + " with value " + str(value)
+        print str(self.id) + ": Putting new value at: " + str(key) + " with value (new): " + str(value) + " store now: " + str(self.key_value_store[key]) + " was " + str(prior_key) + "\n\n"
+
 
     def send(self, json_message):
         """
@@ -546,7 +525,6 @@ class Server:
         @:param json_message: the json message to send on the socket
         """
         try:
-            # print str(self.id) + " SENDING MESSAGE of type  " + json_message['type'] + " -~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             self.sock.send(json.dumps(json_message) + '\n')
         except:
             raise Exception("Could not successfully send message" + str(json_message))
