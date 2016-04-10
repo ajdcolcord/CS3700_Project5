@@ -66,7 +66,7 @@ class Server:
                 else:
                     print "DIDNT FIND VALUE: " + str(value)
                     response = {"src": self.id, "dst": msg['src'], "leader": self.id,
-                     "type": "fail", "MID": msg['MID'], "value": ""}
+                     "type": "ok", "MID": msg['MID'], "value": ""}
                     # self.failed_queue.append((msg, 0))
                     # response = message.create_response_message('fail')
                     self.send(response)
