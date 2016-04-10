@@ -58,8 +58,8 @@ class Server:
                 if message['type'] == 'put':
                     put_exists = message['key'] == msg['key']
 
+            self.add_to_client_queue(msg)
 
-            # self.add_to_client_queue(msg)
             if msg['type'] == 'get':
                 if value and not put_exists:                          #TODO: and put request for this key is not in client queue:
                     # print 'FOUND VALUE: ' + str(value)
@@ -70,13 +70,13 @@ class Server:
                     # response = message.create_response_message('ok')
                     # self.send(response.create_ok_get_message(value))
                 else:
-                    self.add_to_client_queue(msg)
+                    # self.add_to_client_queue(msg)
 
-                    # response = {"src": self.id, "dst": msg['src'], "leader": self.id,
-                    #  "type": "fail", "MID": msg['MID'], "value": ""}
-                    # self.send(response)
-            else:
-                self.add_to_client_queue(msg)
+                    response = {"src": self.id, "dst": msg['src'], "leader": self.id,
+                     "type": "fail", "MID": msg['MID'], "value": ""}
+                    self.send(response)
+            # else:
+            #     self.add_to_client_queue(msg)
 
 
         elif msg['type'] == 'heartbeatACK':
@@ -193,7 +193,7 @@ class Server:
             mess_id = entry[3]
             command = entry[0][0]
             content = entry[0][1]
-
+            '''
             if command == 'get':
                 key = content
                 value = self.key_value_store.get(key)
@@ -205,8 +205,9 @@ class Server:
                     response = {"src": self.id, "dst": client_addr, "leader": self.id,
                                 "type": "fail", "MID": mess_id, "value": ""}
                     self.send(response)
+            '''
 
-            elif command == 'put':
+            if command == 'put':
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
