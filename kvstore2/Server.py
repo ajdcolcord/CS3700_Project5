@@ -75,6 +75,8 @@ class Server:
                     # response = {"src": self.id, "dst": msg['src'], "leader": self.id,
                     #  "type": "fail", "MID": msg['MID'], "value": ""}
                     # self.send(response)
+            else:
+                self.add_to_client_queue(msg)
 
 
         elif msg['type'] == 'heartbeatACK':
