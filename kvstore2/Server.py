@@ -576,11 +576,16 @@ class Server:
         #print str(self.id) + ": SEND_VOTE_REQUEST" + str(datetime.datetime.now())
         # if self.voted_for is None:
         # send these along with RequestRPC self.current_term, self.id, self.lastLogIndex, self.lastLogTerm
-
-        vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
-        json_message = vote.create_vote_request_message(self.id, self.current_term, self.log[-1][1], len(self.log))
-        self.voted_for = self.id
-        self.send(json_message)
+        if len(self.log):
+            vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
+            json_message = vote.create_vote_request_message(self.id, self.current_term, self.log[-1][1], len(self.log))
+            self.voted_for = self.id
+            self.send(json_message)
+        else:
+            vote = Message(self.id, "FFFF", self.id, "voteRequest", 1234567890)
+            json_message = vote.create_vote_request_message(self.id, self.current_term, 0, len(self.log))
+            self.voted_for = self.id
+            self.send(json_message)
 
     def become_follower(self, leader_id):
         """
