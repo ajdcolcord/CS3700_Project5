@@ -54,16 +54,21 @@ class Server:
             value = self.key_value_store.get(msg['key'])
             put_exists = False
 
-            for message in self.client_queue:
-                if message['type'] == 'put':
-                    put_exists = message['key'] == msg['key']
-
             for entry in self.log[self.last_applied + 1:]:
+                client_addr = entry[2]
+                mess_id = entry[3]
                 command = entry[0][0]
                 content = entry[0][1]
                 if command == 'put' and content[0] == msg['key']:
-                    put_exists = True
-                
+                    put_exists = {"src": self.id, "dst": client_addr, "leader": self.id,
+                                "type": "ok", "MID": mess_id, "value": content[1]}
+
+            for message in self.client_queue:
+                if message['type'] == 'put' and message['key'] == msg['key']:
+
+                    put_exists = {"src": self.id, "dst": message['src'], "leader": self.id,
+                                  "type": "ok", "MID": message['MID'], "value": message['value']}
+
 
             # print str(self.id) + ": Received From Client~~: " + str(msg)
             self.add_to_client_queue(msg)
@@ -80,7 +85,10 @@ class Server:
 
                     # response = message.create_response_message('ok')
                     # self.send(response.create_ok_get_message(value))
+                elif put_exists:
+                    self.send(put_exists)
                 else:
+
                     # self.add_to_client_queue(msg)
 
                     response = {"src": self.id, "dst": msg['src'], "leader": self.id,
