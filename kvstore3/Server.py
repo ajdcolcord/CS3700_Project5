@@ -279,7 +279,7 @@ class Server:
             entries_to_send = []
             app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, -1,
                                                             entries_to_send, self.last_applied)
-            print "APP ENTRY EMPTY~~~~~~~~~~~~~~~~~~~"
+            # print "APP ENTRY EMPTY~~~~~~~~~~~~~~~~~~~"
 
             self.send(app_entry)
 
