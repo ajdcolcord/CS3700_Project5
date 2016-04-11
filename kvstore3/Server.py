@@ -180,18 +180,22 @@ class Server:
             content = entry[0][1]
 
             if command == 'get' and self.node_state == 'L':
+                print self.id + " :LEADER: " + "GET REQ RUN COMMAND"
                 key = content
                 value = self.key_value_store.get(key)
                 if value:
                     response = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                                        'type': 'ok', 'MID': mess_id, 'value': value}
+                    print self.id + " :LEADER: RETURN VALUE " + str(value)
                     self.send(response)
                 else:
                     response = {"src": self.id, "dst": client_addr, "leader": self.id,
                                 "type": "fail", "MID": mess_id, "value": ""}
+                    print self.id + " :LEADER: RETURN FAIL "
                     self.send(response)
 
             if command == 'put':
+                print self.id + " :LEADER: " + "PUT REQ RUN COMMAND"
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
@@ -392,6 +396,7 @@ class Server:
 
         if agreement_size == self.quorum_size:
             # TODO: self.apply_command/reply_to_clients(self.last_committed)
+            print self.id + "QUORUM REACHED :::"
             self.run_command_leader()
 
             self.last_applied = self.commit_index
