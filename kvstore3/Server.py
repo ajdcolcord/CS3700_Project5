@@ -56,27 +56,34 @@ class Server:
 
 
         elif msg['type'] == 'heartbeatACK':
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
             self.get_new_election_timeout()
             # TODO: commit log entry yet?????
 
         if msg['type'] == 'heartbeat':
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
             message = Message.create_message_from_json(msg)
 
             if message.term > self.current_term:
+                print ":" + self.id + " :LEADER: RECV: BECOMING FOLLOWER 0"
                 self.become_follower(message.leader)
 
         if msg['type'] == 'voteRequest':
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
             message = Message.create_message_from_json(msg)
             if message.term > self.current_term:
                 if len(self.log):
                     if msg['last_entry_term'] >= self.log[-1][1] and msg['log_size'] >= len(self.log):
+                        print ":" + self.id + " :LEADER: RECV: BECOMING FOLLOWER 1"
                         self.become_follower(msg['leader'])
                         #self.voted_for = msg['src']
                 else:
+                    print ":" + self.id + " :LEADER: RECV: BECOMING FOLLOWER 2"
                     self.become_follower(msg['leader'])
                     #self.voted_for = msg['src']
 
         if msg['type'] == 'appendACK':
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
             self.receive_append_ack(msg)
 
     def candidate_receive_message(self, msg):
