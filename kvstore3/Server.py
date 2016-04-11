@@ -21,7 +21,7 @@ class Server:
         self.replica_ids = replica_ids
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.heartbeat_timeout = 140  # self.election_timeout / 2
+        self.heartbeat_timeout = 120  # self.election_timeout / 2
         self.heartbeat_timeout_start = datetime.datetime.now()
         self.current_term = 0
         self.voted_for = None
@@ -51,7 +51,7 @@ class Server:
         @:return: Void
         """
         if msg['type'] in ['get', 'put']:
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
+            print ":" + str(self.id) + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
             self.add_to_client_queue(msg)
 
 
@@ -61,29 +61,29 @@ class Server:
         #     # TODO: commit log entry yet?????
 
         if msg['type'] == 'heartbeat':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
+            print ":" + str(self.id) + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
             message = Message.create_message_from_json(msg)
 
             if message.term > self.current_term:
-                print ":" + self.id + " :LEADER: RECV: BECOMING FOLLOWER 0"
+                print ":" + str(self.id) + " :LEADER: RECV: BECOMING FOLLOWER 0"
                 self.become_follower(message.leader)
 
         if msg['type'] == 'voteRequest':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
+            print ":" + str(self.id) + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
             message = Message.create_message_from_json(msg)
             if message.term > self.current_term:
                 if len(self.log):
                     if msg['last_entry_term'] >= self.log[-1][1] and msg['log_size'] >= len(self.log):
-                        print ":" + self.id + " :LEADER: RECV: BECOMING FOLLOWER 1"
+                        print ":" + str(self.id) + " :LEADER: RECV: BECOMING FOLLOWER 1"
                         self.become_follower(msg['leader'])
                         #self.voted_for = msg['src']
                 else:
-                    print ":" + self.id + " :LEADER: RECV: BECOMING FOLLOWER 2"
+                    print ":" + str(self.id) + " :LEADER: RECV: BECOMING FOLLOWER 2"
                     self.become_follower(msg['leader'])
                     #self.voted_for = msg['src']
 
         if msg['type'] == 'appendACK':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : src= " + str(msg['src'])
+            print ":" + str(self.id) + " :LEADER: RECV: " + msg['type'] + " : src= " + str(msg['src'])
             self.receive_append_ack(msg)
 
     def candidate_receive_message(self, msg):
@@ -180,27 +180,31 @@ class Server:
             content = entry[0][1]
 
             if command == 'get':
-                print self.id + " :LEADER: " + "GET REQ RUN COMMAND : " + mess_id
+                print str(self.id) + " :LEADER: " + "GET REQ RUN COMMAND : " + mess_id
                 key = content
                 value = self.key_value_store.get(key)
                 if value:
                     response = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                                        'type': 'ok', 'MID': mess_id, 'value': value}
-                    print self.id + " :LEADER: RETURN VALUE " + str(value)
+                    print str(self.id) + " :LEADER: GET RETURN VALUE " + str(value)
                     self.send(response)
                 else:
                     response = {"src": self.id, "dst": client_addr, "leader": self.id,
                                 "type": "fail", "MID": mess_id, "value": ""}
-                    print self.id + " :LEADER: RETURN FAIL "
+                    print str(self.id) + " :LEADER: RETURN FAIL "
+                    print str(self.id) + " :LEADER: GET FAIL VALUE "
+
                     self.send(response)
 
             if command == 'put':
-                print self.id + " :LEADER: " + "PUT REQ RUN COMMAND : " + mess_id
+                print str(self.id) + " :LEADER: " + "PUT REQ RUN COMMAND : " + mess_id
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
                 message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                            'type': 'ok', 'MID': mess_id}
+                print str(self.id) + " :LEADER: SEND OK VALUE " + str(value)
+
                 # print str(self.id) + ": Sending (run_command_leader) out message for put: " + str(message) + "\n"
                 self.send(message)
 
@@ -341,8 +345,9 @@ class Server:
         leader_prev_log_term = logEntry['prevLogTerm']
 
         self.get_new_election_timeout()
-
+        print str(self.id) + ": received append_entry - my_prev_term=" + str(self.log[leader_prev_log_index][1]) + " Leader_prev_term=" + str(leader_prev_log_term)
         if len(self.log) == 0:
+
             self.log = logEntry['entries']
             self.commit_index = len(self.log) - 1
             self.run_command_follower(logEntry['leader_last_applied'])
@@ -399,6 +404,7 @@ class Server:
         follower_commit_index = int(msg['follower_commit_index'])
         self.match_index[follow_source] = follower_commit_index
 
+
         agreement_size = 1
         for replica in self.match_index:
             if self.match_index[replica] >= self.commit_index:
@@ -406,7 +412,7 @@ class Server:
 
         if agreement_size == self.quorum_size:
             # TODO: self.apply_command/reply_to_clients(self.last_committed)
-            print self.id + "QUORUM REACHED :::"
+            print str(self.id) + "QUORUM REACHED :::"
             self.run_command_leader()
             #agreement_size += 1
             self.last_applied = self.commit_index
