@@ -51,7 +51,8 @@ while True:
             #         SERVER.send_append_entries()
             #     else:
             print "SERVER :LEADER: " + SERVER.id + ": Send Heartbeat"
-            SERVER.send_heartbeat()
+            # SERVER.send_heartbeat()
+            SERVER.send_append_entries()
     # if SERVER.node_state == "F":
     #     print str(SERVER.id) + ": F"
     # if SERVER.node_state == "C":
