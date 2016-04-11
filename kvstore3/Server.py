@@ -398,7 +398,7 @@ class Server:
             # TODO: self.apply_command/reply_to_clients(self.last_committed)
             print self.id + "QUORUM REACHED :::"
             self.run_command_leader()
-
+            agreement_size += 1
             self.last_applied = self.commit_index
 
 
