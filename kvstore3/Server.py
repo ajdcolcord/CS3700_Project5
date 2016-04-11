@@ -180,7 +180,7 @@ class Server:
             content = entry[0][1]
 
             if command == 'get' and self.node_state == 'L':
-                print self.id + " :LEADER: " + "GET REQ RUN COMMAND"
+                print self.id + " :LEADER: " + "GET REQ RUN COMMAND : " + mess_id
                 key = content
                 value = self.key_value_store.get(key)
                 if value:
@@ -195,7 +195,7 @@ class Server:
                     self.send(response)
 
             if command == 'put':
-                print self.id + " :LEADER: " + "PUT REQ RUN COMMAND"
+                print self.id + " :LEADER: " + "PUT REQ RUN COMMAND : " + mess_id
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
@@ -398,7 +398,7 @@ class Server:
             # TODO: self.apply_command/reply_to_clients(self.last_committed)
             print self.id + "QUORUM REACHED :::"
             self.run_command_leader()
-            agreement_size += 1
+            #agreement_size += 1
             self.last_applied = self.commit_index
 
 
