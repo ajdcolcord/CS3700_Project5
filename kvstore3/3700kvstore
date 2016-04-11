@@ -20,7 +20,7 @@ print "Server Starting..."
 while True:
     if SERVER.node_state in ["F", "C"]:
         if SERVER.election_timedout():
-            print "SERVER:: election timed out : initiating election..."
+            # print "SERVER:: election timed out : initiating election..."
             SERVER.initiate_election()
 
     # new check
@@ -31,12 +31,12 @@ while True:
     if SERVER.node_state == "L":
         print str(SERVER.id) + " last_app= " + str(SERVER.last_applied) + " commit_index=" + str(SERVER.commit_index)
         if SERVER.last_applied == SERVER.commit_index or (SERVER.last_applied == -1 and SERVER.commit_index == 0):
-            print "SERVER :" + SERVER.id + ": Pull from Queue"
+            # print "SERVER :" + SERVER.id + ": Pull from Queue"
             SERVER.pull_from_queue()
             if SERVER.last_applied < len(SERVER.log) - 1:
                 SERVER.commit_index = len(SERVER.log) - 1
-                print "SERVER :" + SERVER.id + ':send' + str(datetime.datetime.now()) + " LA: " + str(
-                    SERVER.last_applied) + " CI: " + str(SERVER.commit_index) + " LOG_SIZE: " + str(len(SERVER.log))
+                # print "SERVER :" + SERVER.id + ':send' + str(datetime.datetime.now()) + " LA: " + str(
+                #     SERVER.last_applied) + " CI: " + str(SERVER.commit_index) + " LOG_SIZE: " + str(len(SERVER.log))
                 SERVER.send_append_entries()
 
         # print str(SERVER.id) + ": L"
