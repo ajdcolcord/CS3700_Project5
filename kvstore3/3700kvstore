@@ -18,9 +18,10 @@ SERVER.get_new_election_timeout()
 print "Server Starting..."
 
 while True:
-    if SERVER.election_timedout():
-        print "SERVER:: election timed out : initiating election..."
-        SERVER.initiate_election()
+    if SERVER.node_state in ["F", "C"]:
+        if SERVER.election_timedout():
+            print "SERVER:: election timed out : initiating election..."
+            SERVER.initiate_election()
 
     # new check
 

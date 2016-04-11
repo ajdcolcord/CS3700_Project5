@@ -55,10 +55,10 @@ class Server:
             self.add_to_client_queue(msg)
 
 
-        elif msg['type'] == 'heartbeatACK':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
-            self.get_new_election_timeout()
-            # TODO: commit log entry yet?????
+        # elif msg['type'] == 'heartbeatACK':
+        #     print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
+        #     self.get_new_election_timeout()
+        #     # TODO: commit log entry yet?????
 
         if msg['type'] == 'heartbeat':
             print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
@@ -112,7 +112,7 @@ class Server:
 
         if msg['type'] in ['get', 'put']:
             message = Message.create_message_from_json(msg)
-            redirect_message = message.create_redirect_message(self.leader_id)
+            redirect_message = message.create_redirect_message("FFFF")
 
             self.send(redirect_message)
 
@@ -179,7 +179,7 @@ class Server:
             command = entry[0][0]
             content = entry[0][1]
 
-            if command == 'get' and self.node_state == 'L':
+            if command == 'get':
                 print self.id + " :LEADER: " + "GET REQ RUN COMMAND : " + mess_id
                 key = content
                 value = self.key_value_store.get(key)
@@ -272,7 +272,7 @@ class Server:
         if prevLogIndex > len(self.log) - 1:
             app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 51], self.last_applied)
             # app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 2], self.last_applied)
-
+            print "APP ENTRY~~~~~~~~~~~~~~~~~~~"
             self.send(app_entry)
         else:
             if prevLogIndex >= 0:
@@ -287,6 +287,7 @@ class Server:
             # entries_to_send = self.log[self.match_index[replica_id] + 1:self.match_index[replica_id] + 2]
 
             app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, prevLogTerm, entries_to_send, self.last_applied)
+            print "APP ENTRY~~~~~~~~~~~~~~~~~~~"
 
             self.send(app_entry)
 
@@ -302,8 +303,10 @@ class Server:
             self.leader_id = heart_beat.leader
             self.get_new_election_timeout()
             self.run_command_follower(msg['leader_last_applied'])
-            hb_ack = heart_beat.create_heart_beat_ACK_message(self.id, self.commit_index)
-            self.send(hb_ack)
+            # hb_ack = heart_beat.create_heart_beat_ACK_message(self.id, self.commit_index)
+            # print "HB ACK~~~~~~~~~~~~~~~~~~~"
+
+            # self.send(hb_ack)
 
     def receive_vote_request_as_follower(self, msg):
         """
@@ -523,7 +526,7 @@ class Server:
         Send out a new heartbeat message to all replicas, resetting our heartbeat timeout
         :return: Void
         """
-        #print str(self.id) + "~~~HEARTBEAT~~~"
+        print str(self.id) + "~~~HEARTBEAT~~~"
         message = Message.create_heart_beat_message(self.id, self.current_term, self.last_applied)
         self.reset_heartbeat_timeout()
         self.get_new_election_timeout()
