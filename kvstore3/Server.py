@@ -170,8 +170,8 @@ class Server:
 
         self.commit_index = len(self.log)
 
-        print str(self.id) + " MYLOG SIZE: " + str(len(self.log)) + " MY LAST APPLIED: " + str(
-            self.last_applied) + " MY COMMIT_INDEX: " + str(self.commit_index)
+        # print str(self.id) + " MYLOG SIZE: " + str(len(self.log)) + " MY LAST APPLIED: " + str(
+        #     self.last_applied) + " MY COMMIT_INDEX: " + str(self.commit_index)
 
     def add_entry(self, command, term, client_address, mid):
         """
