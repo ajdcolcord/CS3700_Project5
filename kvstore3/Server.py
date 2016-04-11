@@ -356,7 +356,7 @@ class Server:
                      'follower_last_applied': self.last_applied,
                      'follower_commit_index': self.commit_index}
 
-            print str(self.id) + 'empty log--- Log now=' + str(self.log) + " c_i=" + str(self.commit_index) + ' l_a=' + str(self.last_applied)
+            print str(self.id) + 'empty log--- Log Entries: ' + str(logEntry['entries']) + 'Log now=' + str(self.log) + " c_i=" + str(self.commit_index) + ' l_a=' + str(self.last_applied)
 
             self.send(reply)
 
