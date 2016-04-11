@@ -40,7 +40,8 @@ while True:
 
         # print str(SERVER.id) + ": L"
         if SERVER.heart_beat_timedout():
-            SERVER.fail_client_pending_entries()
+            if len(SERVER.log):
+                SERVER.fail_client_pending_entries()
 
             SERVER.send_append_entries()
     # if SERVER.node_state == "F":
