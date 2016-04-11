@@ -275,7 +275,16 @@ class Server:
         term = self.current_term
         prevLogIndex = self.match_index[replica_id]
 
-        if prevLogIndex > len(self.log) - 1:
+        if self.match_index[replica_id] == self.commit_index:
+            entries_to_send = []
+            app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, -1,
+                                                            entries_to_send, self.last_applied)
+            print "APP ENTRY EMPTY~~~~~~~~~~~~~~~~~~~"
+
+            self.send(app_entry)
+
+
+        elif prevLogIndex > len(self.log) - 1:
             app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 51], self.last_applied)
             # app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 2], self.last_applied)
             print "APP ENTRY~~~~~~~~~~~~~~~~~~~"
@@ -362,7 +371,7 @@ class Server:
             if len(self.log) == 0:
                 self.log = logEntry['entries']
                 self.commit_index = len(self.log) - 1
-                self.run_command_follower(logEntry['leader_last_applied'])
+
 
                 if len(logEntry['entries']) > 0:
 
