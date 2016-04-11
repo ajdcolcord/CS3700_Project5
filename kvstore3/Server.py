@@ -167,8 +167,11 @@ class Server:
             self.send(fail_message)
 
         self.log = self.log[:self.last_applied + 1]
-        self.commit_index = self.last_applied
 
+        self.commit_index = len(self.log)
+
+        print str(self.id) + " MYLOG SIZE: " + str(len(self.log)) + " MY LAST APPLIED: " + str(
+            self.last_applied) + " MY COMMIT_INDEX: " + str(self.commit_index)
 
     def add_entry(self, command, term, client_address, mid):
         """
@@ -298,7 +301,11 @@ class Server:
 
 
         elif prevLogIndex > len(self.log) - 1:
-            app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 51], self.last_applied)
+            app_entry = Message.create_append_entry_message(
+                src, replica_id, term, prevLogIndex,
+                self.log[self.last_applied][1],
+                self.log[self.last_applied + 1:self.last_applied + 51],
+                self.last_applied)
             # app_entry = Message.create_append_entry_message(src, replica_id, term, prevLogIndex, self.log[self.last_applied][1], self.log[self.last_applied + 1:self.last_applied + 2], self.last_applied)
             # print "APP ENTRY~~~~~~~~~~~~~~~~~~~"
             self.send(app_entry)
