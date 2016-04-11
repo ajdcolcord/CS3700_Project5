@@ -257,7 +257,7 @@ class Server:
         Loop through each replica and send the necessary append entries to keep the followers up to date with this leader
         :return: Void
         """
-        print str(self.id) + " LEADER LOG- " + str(self.log)
+        #print str(self.id) + " LEADER LOG- " + str(self.log)
         for replica in self.match_index:
             self.send_inidivual_append_entry(replica)
 
