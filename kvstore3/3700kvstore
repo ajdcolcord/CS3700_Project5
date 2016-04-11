@@ -37,7 +37,7 @@ while True:
                 print "SERVER :" + SERVER.id + ':send' + str(datetime.datetime.now()) + " LA: " + str(
                     SERVER.last_applied) + " CI: " + str(SERVER.commit_index) + " LOG_SIZE: " + str(len(SERVER.log))
                 SERVER.send_append_entries()
-                
+
         # print str(SERVER.id) + ": L"
         if SERVER.heart_beat_timedout():
             if SERVER.last_applied < len(SERVER.log) - 1:
