@@ -261,6 +261,7 @@ class Server:
         for replica in self.match_index:
             self.send_inidivual_append_entry(replica)
 
+
         self.reset_heartbeat_timeout()
         self.get_new_election_timeout()
 
@@ -352,12 +353,16 @@ class Server:
             leader_prev_log_index = logEntry['prevLogIndex']
             leader_prev_log_term = logEntry['prevLogTerm']
 
+            print str(self.id) + "log_entry_length_received = " + str(len(logEntry['entries']))
+
             self.get_new_election_timeout()
             if len(self.log) == 0:
                 self.log = logEntry['entries']
                 self.commit_index = len(self.log) - 1
                 self.run_command_follower(logEntry['leader_last_applied'])
+
                 if len(logEntry['entries']) > 0:
+
                     reply = {'src': self.id,
                              'dst': message['src'],
                              'type': "appendACK",
