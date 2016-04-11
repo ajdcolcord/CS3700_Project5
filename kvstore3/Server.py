@@ -343,6 +343,13 @@ class Server:
             self.log = logEntry['entries']
             self.commit_index = len(self.log) - 1
             self.run_command_follower(logEntry['leader_last_applied'])
+            reply = {'src': self.id,
+                     'dst': message['src'],
+                     'type': "appendACK",
+                     'leader': self.leader_id,
+                     'follower_last_applied': self.last_applied,
+                     'follower_commit_index': self.commit_index}
+            self.send(reply)
 
         # if leader_prev_log_term = 0:
         #     self.log =
