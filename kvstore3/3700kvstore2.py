@@ -217,7 +217,7 @@ def change_to_leader():
 
 
 
-
+print "STARTING NOW::::::::::::::::::::::::::::"
 while True:
     print str(my_id) + ": Node State = " + str(NODE_STATE)
 
@@ -241,7 +241,7 @@ while True:
         if NODE_STATE == "L":
             # For now, ignore get() and put() from clients
             if msg['type'] in ['get', 'put']:
-                print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
+                print ":" + Server.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
                 message = Message.create_message_from_json(msg)
 
                 #client_action(message)
@@ -254,7 +254,7 @@ while True:
         if NODE_STATE == "C":
             print str(my_id) + ": Message: " + str(msg)
             if msg['type'] =='vote':
-                print ":" + self.id + " :CANDID: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
+                print ":" + Server.id + " :CANDID: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
                 print str(my_id) + ": Got Vote-------------"
 
                 message = Message.create_message_from_json(msg)
@@ -272,7 +272,7 @@ while True:
                 initiate_election()
             else:
                 if msg['type'] == 'voteRequest':
-                    print ":" + self.id + " :FOLLOW: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
+                    print ":" + Server.id + " :FOLLOW: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
                     vote_req_message = Message.create_message_from_json(msg)
                     send_vote(vote_req_message)
 
