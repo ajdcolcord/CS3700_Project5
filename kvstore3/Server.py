@@ -168,7 +168,7 @@ class Server:
 
         self.log = self.log[:self.last_applied + 1]
 
-        self.commit_index = len(self.log)
+        self.commit_index = len(self.log) - 1
 
         # print str(self.id) + " MYLOG SIZE: " + str(len(self.log)) + " MY LAST APPLIED: " + str(
         #     self.last_applied) + " MY COMMIT_INDEX: " + str(self.commit_index)
