@@ -466,8 +466,10 @@ class Server:
         Takes in a json message to send on the socket
         @:param json_message: the json message to send on the socket
         """
+        global TYPES
+
         try:
-            TYPES[json_message['type']] = TYPES[json_message['type']] + 1
+            TYPES[json_message['type']] += 1
             self.sock.send(json.dumps(json_message) + '\n')
             print TYPES
         except:
