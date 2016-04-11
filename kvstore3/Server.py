@@ -45,6 +45,7 @@ class Server:
         for replica in replica_ids:
             self.match_index[replica] = -1
 
+
     def leader_receive_message(self, msg):
         """
         All Leader Message Receiving
@@ -54,12 +55,6 @@ class Server:
         if msg['type'] in ['get', 'put']:
             # print ":" + str(self.id) + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
             self.add_to_client_queue(msg)
-
-
-        # elif msg['type'] == 'heartbeatACK':
-        #     print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
-        #     self.get_new_election_timeout()
-        #     # TODO: commit log entry yet?????
 
         if msg['type'] == 'heartbeat':
             # print ":" + str(self.id) + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
@@ -156,6 +151,24 @@ class Server:
         for entry in self.client_queue:
             self.add_client_entry_to_log(entry)
         self.client_queue = []
+
+    def fail_client_pending_entries(self):
+
+        for pending_entry in self.log[self.last_applied + 1: self.commit_index + 1]:
+            entry = pending_entry
+            client_addr = entry[2]
+            mess_id = entry[3]
+
+            fail_message = {"src": self.id,
+                            "dst": client_addr,
+                            "leader": self.id,
+                            "type": "fail",
+                            "MID": mess_id}
+            self.send(fail_message)
+
+        self.log = self.log[:self.last_applied + 1]
+        self.commit_index = self.last_applied
+
 
     def add_entry(self, command, term, client_address, mid):
         """
