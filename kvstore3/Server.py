@@ -56,7 +56,7 @@ class Server:
 
 
         elif msg['type'] == 'heartbeatACK':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
             self.get_new_election_timeout()
             # TODO: commit log entry yet?????
 
