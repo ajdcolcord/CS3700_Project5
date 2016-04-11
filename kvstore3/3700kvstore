@@ -25,10 +25,11 @@ while True:
     # new check
     '''
     if SERVER.last_applied == SERVER.commit_index:
+        print "SERVER :" + SERVER.id + ": Pull from Queue"
         SERVER.pull_from_queue()
         if SERVER.last_applied < len(SERVER.log) - 1:
             SERVER.commit_index = len(SERVER.log) - 1
-            print 'send' + str(datetime.datetime.now()) + " LA: " + str(SERVER.last_applied) + " CI: " + str(SERVER.commit_index) + " LOG_SIZE: " + str(len(SERVER.log))
+            print "SERVER :" + SERVER.id + ':send' + str(datetime.datetime.now()) + " LA: " + str(SERVER.last_applied) + " CI: " + str(SERVER.commit_index) + " LOG_SIZE: " + str(len(SERVER.log))
             SERVER.send_append_entries()
     '''
 
@@ -37,12 +38,16 @@ while True:
         # print str(SERVER.id) + ": L"
         if SERVER.heart_beat_timedout():
             if SERVER.last_applied < len(SERVER.log) - 1:
+                print "SERVER :LEADER: " + SERVER.id + ": Send Append Entries"
                 SERVER.send_append_entries()
             else:
+                print "SERVER :LEADER: " + SERVER.id + ": Pull from Queue"
                 SERVER.pull_from_queue()
                 if SERVER.last_applied < len(SERVER.log) - 1:
+                    print "SERVER :LEADER: " + SERVER.id + ": Send Append Entries"
                     SERVER.send_append_entries()
                 else:
+                    print "SERVER :LEADER: " + SERVER.id + ": Send Heartbeat"
                     SERVER.send_heartbeat()
     # if SERVER.node_state == "F":
     #     print str(SERVER.id) + ": F"
