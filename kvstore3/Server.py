@@ -165,7 +165,7 @@ class Server:
             command = entry[0][0]
             content = entry[0][1]
 
-            if command == 'get':
+            if command == 'get' and self.node_state == 'L':
                 key = content
                 value = self.key_value_store.get(key)
                 if value:
