@@ -30,7 +30,7 @@ while True:
 
     if SERVER.node_state == "L":
         print str(SERVER.id) + " last_app= " + str(SERVER.last_applied) + " commit_index=" + str(SERVER.commit_index)
-        if SERVER.last_applied == SERVER.commit_index:
+        if SERVER.last_applied <= SERVER.commit_index:
             print "SERVER :" + SERVER.id + ": Pull from Queue"
             SERVER.pull_from_queue()
             if SERVER.last_applied < len(SERVER.log) - 1:
