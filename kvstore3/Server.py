@@ -170,6 +170,9 @@ class Server:
 
         self.commit_index = len(self.log) - 1
 
+        for replica in self.match_index:
+            self.match_index[replica] = min(self.commit_index, self.match_index[replica])
+
         # print str(self.id) + " MYLOG SIZE: " + str(len(self.log)) + " MY LAST APPLIED: " + str(
         #     self.last_applied) + " MY COMMIT_INDEX: " + str(self.commit_index)
 
