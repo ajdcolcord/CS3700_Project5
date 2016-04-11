@@ -356,7 +356,7 @@ class Server:
 
         if message['term'] >= self.current_term:
 
-            self.run_command_follower(message['leader_last_applied'])
+
 
             self.current_term = message['term']
             self.leader_id = message['src']
@@ -364,6 +364,7 @@ class Server:
             logEntry = message['logEntry']
             leader_prev_log_index = logEntry['prevLogIndex']
             leader_prev_log_term = logEntry['prevLogTerm']
+            self.run_command_follower(logEntry['leader_last_applied'])
 
             print str(self.id) + "log_entry_length_received = " + str(len(logEntry['entries']))
 
