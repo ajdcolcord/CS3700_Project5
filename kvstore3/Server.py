@@ -83,7 +83,7 @@ class Server:
                     #self.voted_for = msg['src']
 
         if msg['type'] == 'appendACK':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
             self.receive_append_ack(msg)
 
     def candidate_receive_message(self, msg):
