@@ -346,7 +346,7 @@ class Server:
 
         self.get_new_election_timeout()
         if len(self.log) == 0:
-
+            print str(self.id) + 'empty log'
             self.log = logEntry['entries']
             self.commit_index = len(self.log) - 1
             self.run_command_follower(logEntry['leader_last_applied'])
