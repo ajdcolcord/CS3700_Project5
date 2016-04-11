@@ -2,6 +2,7 @@
 
 import sys, socket, select, time, json, random, datetime
 from message import Message
+from Server import Server
 
 # Your ID number
 my_id = sys.argv[1]
@@ -240,9 +241,11 @@ while True:
         if NODE_STATE == "L":
             # For now, ignore get() and put() from clients
             if msg['type'] in ['get', 'put']:
+                print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
                 message = Message.create_message_from_json(msg)
 
-                client_action(message)
+                #client_action(message)
+                Server.leader_receive_message(message)
 
         # if NODE_STATE == "C": - run candidate directions
         #    - check election_timeout:
@@ -251,6 +254,7 @@ while True:
         if NODE_STATE == "C":
             print str(my_id) + ": Message: " + str(msg)
             if msg['type'] =='vote':
+                print ":" + self.id + " :CANDID: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
                 print str(my_id) + ": Got Vote-------------"
 
                 message = Message.create_message_from_json(msg)
@@ -268,6 +272,7 @@ while True:
                 initiate_election()
             else:
                 if msg['type'] == 'voteRequest':
+                    print ":" + self.id + " :FOLLOW: RECV: " + msg['type'] + " : mid= " + msg['MID'] + "kvstore"
                     vote_req_message = Message.create_message_from_json(msg)
                     send_vote(vote_req_message)
 
