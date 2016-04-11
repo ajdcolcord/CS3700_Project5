@@ -51,6 +51,7 @@ class Server:
         @:return: Void
         """
         if msg['type'] in ['get', 'put']:
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
             self.add_to_client_queue(msg)
 
 
@@ -101,6 +102,12 @@ class Server:
             message = Message.create_message_from_json(msg)
             if message.term > self.current_term:
                 self.become_follower(msg['leader'])
+
+        if msg['type'] in ['get', 'put']:
+            message = Message.create_message_from_json(msg)
+            redirect_message = message.create_redirect_message(self.leader_id)
+
+            self.send(redirect_message)
 
     def follower_receive_message(self, msg):
         """
