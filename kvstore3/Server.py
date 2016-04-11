@@ -469,7 +469,11 @@ class Server:
         global TYPES
 
         try:
-            TYPES[json_message['type']] += 1
+            if json_message['type'] in TYPES:
+                TYPES[json_message['type']] = 1 + TYPES[json_message['type']]
+            else:
+                TYPES[json_message['type']] = 1
+                
             self.sock.send(json.dumps(json_message) + '\n')
             print TYPES
         except:
