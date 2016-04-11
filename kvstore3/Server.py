@@ -345,7 +345,6 @@ class Server:
         leader_prev_log_term = logEntry['prevLogTerm']
 
         self.get_new_election_timeout()
-        print str(self.id) + ": received append_entry - my_prev_term=" + str(self.log[leader_prev_log_index][1]) + " Leader_prev_term=" + str(leader_prev_log_term)
         if len(self.log) == 0:
 
             self.log = logEntry['entries']
@@ -365,6 +364,8 @@ class Server:
 
 
         else:
+            print str(self.id) + ": received append_entry - my_prev_term=" + str(
+                self.log[leader_prev_log_index][1]) + " Leader_prev_term=" + str(leader_prev_log_term)
 
             if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                 #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
