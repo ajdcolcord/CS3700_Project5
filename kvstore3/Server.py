@@ -61,7 +61,7 @@ class Server:
             # TODO: commit log entry yet?????
 
         if msg['type'] == 'heartbeat':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
             message = Message.create_message_from_json(msg)
 
             if message.term > self.current_term:
@@ -69,7 +69,7 @@ class Server:
                 self.become_follower(message.leader)
 
         if msg['type'] == 'voteRequest':
-            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + msg['MID']
+            print ":" + self.id + " :LEADER: RECV: " + msg['type'] + " : mid= " + str(msg['MID'])
             message = Message.create_message_from_json(msg)
             if message.term > self.current_term:
                 if len(self.log):
