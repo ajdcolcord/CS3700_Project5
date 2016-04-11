@@ -5,6 +5,7 @@
 import sys, socket, select, time, json, random, datetime
 from message import Message
 
+TYPES = {}
 
 class Server:
     """
@@ -466,7 +467,9 @@ class Server:
         @:param json_message: the json message to send on the socket
         """
         try:
+            TYPES[json_message['type']] = TYPES[json_message['type']] + 1
             self.sock.send(json.dumps(json_message) + '\n')
+            print TYPES
         except:
             raise Exception("Could not successfully send message" + str(json_message))
 
