@@ -346,6 +346,9 @@ class Server:
 
 
         if message['term'] >= self.current_term:
+
+            self.run_command_follower(message['leader_last_applied'])
+
             self.current_term = message['term']
             self.leader_id = message['src']
 
