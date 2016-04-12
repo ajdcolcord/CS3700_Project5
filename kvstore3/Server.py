@@ -419,7 +419,7 @@ class Server:
             else:
                 # print str(self.id) + ": received append_entry - my_prev_term=" + str(
                 #     self.log[leader_prev_log_index][1]) + " Leader_prev_term=" + str(leader_prev_log_term)
-
+                print str(self.id) + " LEAD PREV LOG INDEX: " + str(leader_prev_log_index)
                 if self.log[leader_prev_log_index][1] == leader_prev_log_term:
                     #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
                     self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
