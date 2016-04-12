@@ -168,7 +168,7 @@ class Server:
 
         self.log = self.log[:self.last_applied + 1]
 
-        self.commit_index = len(self.log) - 1
+        self.commit_index = max(0, len(self.log) - 1)
 
         for replica in self.match_index:
             self.match_index[replica] = min(self.commit_index, self.match_index[replica])
