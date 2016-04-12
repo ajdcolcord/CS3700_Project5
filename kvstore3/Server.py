@@ -441,13 +441,13 @@ class Server:
                     # else self.log[leader_prev_log_index][1] != leader_prev_log_term:
                     else:
                         # TODO: send fail, do not add to log
-                        self.commit_index = len(self.log) - 2
+                        self.commit_index = len(self.log) - 1
                         reply = {'src': self.id,
                                  'dst': message['src'],
                                  'type': "appendACK",
                                  'leader': self.leader_id,
                                  'follower_last_applied': self.last_applied,
-                                 'follower_commit_index': self.commit_index}
+                                 'follower_commit_index': self.commit_index - 1}
 
                         self.send(reply)
                 else:
