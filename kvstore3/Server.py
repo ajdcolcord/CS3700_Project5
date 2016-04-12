@@ -420,24 +420,37 @@ class Server:
                 # print str(self.id) + ": received append_entry - my_prev_term=" + str(
                 #     self.log[leader_prev_log_index][1]) + " Leader_prev_term=" + str(leader_prev_log_term)
                 print str(self.id) + " LEAD PREV LOG INDEX: " + str(leader_prev_log_index)
-                if self.log[leader_prev_log_index][1] == leader_prev_log_term:
-                    #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
-                    self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
+                if len(self.log) - 1 >= leader_prev_log_index:
 
-                    self.commit_index = len(self.log) - 1
-                    self.run_command_follower(logEntry['leader_last_applied'])
-                    if len(logEntry['entries']) > 0:
+                    if self.log[leader_prev_log_index][1] == leader_prev_log_term:
+                        #self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
+                        self.log = self.log[:leader_prev_log_index + 1] + logEntry['entries']
 
+                        self.commit_index = len(self.log) - 1
+                        self.run_command_follower(logEntry['leader_last_applied'])
+                        if len(logEntry['entries']) > 0:
+
+                            reply = {'src': self.id,
+                                     'dst': message['src'],
+                                     'type': "appendACK",
+                                     'leader': self.leader_id,
+                                     'follower_last_applied': self.last_applied,
+                                     'follower_commit_index': self.commit_index}
+                            self.send(reply)
+
+                    # else self.log[leader_prev_log_index][1] != leader_prev_log_term:
+                    else:
+                        # TODO: send fail, do not add to log
+                        self.commit_index = len(self.log) - 2
                         reply = {'src': self.id,
                                  'dst': message['src'],
                                  'type': "appendACK",
                                  'leader': self.leader_id,
                                  'follower_last_applied': self.last_applied,
                                  'follower_commit_index': self.commit_index}
-                        self.send(reply)
 
-                elif self.log[leader_prev_log_index][1] != leader_prev_log_term:
-                    # TODO: send fail, do not add to log
+                        self.send(reply)
+                else:
                     self.commit_index = len(self.log) - 1
                     reply = {'src': self.id,
                              'dst': message['src'],
