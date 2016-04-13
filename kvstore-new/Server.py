@@ -191,7 +191,6 @@ class Server:
                         self.voted_for = json_message['src']
                         self.send(vote)
                         self.get_new_election_timeout()
-                        print str(self.id) + ": VOTED FOR ======" + str(json_message['src'])
 
     def receive_vote(self, json_message):
         """
@@ -204,7 +203,6 @@ class Server:
 
         if len(self.voted_for_me) >= self.quorum_size:
             self.change_to_leader()
-        print str(self.id) + ": Voted For Me..." + str(self.voted_for_me)
 
     def initiate_election(self):
         """
@@ -223,7 +221,6 @@ class Server:
         Loop through each replica and send the necessary append entries to keep the followers up to date with this leader
         :return: Void
         """
-        # print str(self.id) + " LEADER LOG- " + str(self.log)
         for replica in self.match_index:
             self.send_append_entries_rpc_individual(replica)
 
@@ -269,7 +266,6 @@ class Server:
                     self.send_append_entries_rpc_ack()
 
             elif len(self.log) - 1 >= json_message['prevLogIndex']:
-                # print str(self.id) + " -- LEN LOG INDEX = " + str(len(self.log) - 1) + ""
                 if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                     self.last_applied = json_message['leaderLastApplied']
@@ -352,10 +348,12 @@ class Server:
                     response = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                                 'type': 'ok', 'MID': mess_id, 'value': value}
                     self.send(response)
+                    print str(self.id) + ": SEND OK GET"
                 else:
                     response = {"src": self.id, "dst": client_addr, "leader": self.id,
                                 "type": "fail", "MID": mess_id, "value": ""}
                     self.send(response)
+                    print str(self.id) + ": SEND FAIL GET"
 
             if command == 'put':
                 key = content[0]
@@ -364,6 +362,7 @@ class Server:
                 message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                            'type': 'ok', 'MID': mess_id}
 
+                print str(self.id) + ": SEND OK PUT"
                 self.send(message)
 
     def run_command_follower(self, leader_last_applied):
@@ -409,6 +408,7 @@ class Server:
         Execute the actions needed to change to a leader status, resetting timeouts, leader ID, etc.
         @:return: Void
         """
+        print str(self.id) + ": BECAME LEADER"
         self.reinitialize_match_index()
         self.get_new_election_timeout()
         self.node_state = "L"
