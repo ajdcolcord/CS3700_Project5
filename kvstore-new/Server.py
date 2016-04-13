@@ -232,7 +232,7 @@ class Server:
         :return: JSON
         """
         prevLogTerm = 0
-        if len(self.log):
+        if len(self.log) and self.match_index[replica_id] > 0:
             prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
         entries = self.log[self.match_index[replica_id]:]
