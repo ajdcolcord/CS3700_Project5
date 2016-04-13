@@ -48,7 +48,9 @@ class Server:
         @:param msg - the JSON message received
         @:return: Void
         """
-        return
+        if msg['type'] == 'append_entries_rpc_ack':
+            self.receive_append_entries_rpc_ack(msg)
+
 
     def candidate_receive_message(self, msg):
         """
@@ -186,21 +188,48 @@ class Server:
         """
         if json_message['term'] >= self.currentTerm:
             self.get_new_election_timeout()
+            self.leader_id = json_message['src']
+
             if not len(self.log):
                 self.log = json_message['entries']
                 self.last_applied = json_message['prevLogIndex']
-                #self.send_append_entries_rpc_ack(json_message['src'])
+                if len(self.log):
+                    self.send_append_entries_rpc_ack()
+                    #self.send_append_entries_rpc_ack(json_message['src'])
 
 
 
             if len(self.log) - 1 >= json_message['prevLogIndex']:
                 if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+                    self.send_append_entries_rpc_ack()
 
+        # else:
+        #     """ DO NOT SET ENTRIES, FAIL
+        #     """
 
-            # else:
-            #     """ DO NOT SET ENTRIES, FAIL
-            #     """
+    def send_append_entries_rpc_ack(self):
+        """
+        FOLLOWER
+        :return:
+        """
+        append_entries_rpc = {"src": self.id,
+                              "dst": self.leader_id,
+                              "leader": self.leader_id,
+                              "type": "append_entries_rpc_ack",
+                              "term": self.currentTerm,
+                              "match_index": len(self.log)}
+
+        self.send(append_entries_rpc)
+
+    def receive_append_entries_rpc_ack(self, json_msg):
+        """
+        LEADER
+        :param json_msg:
+        :return:
+        """
+        if json_msg['term'] == self.currentTerm:
+            self.match_index[json_msg['src']] = self.match_index[json_msg['match_index']]
 
 
     def send(self, json_message):
