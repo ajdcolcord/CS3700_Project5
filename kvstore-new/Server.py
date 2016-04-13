@@ -233,6 +233,7 @@ class Server:
         """
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
+
             prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
         entries = self.log[self.match_index[replica_id]:]
@@ -305,7 +306,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": leader_prev_log_index - 1}
+                              "match_index": leader_prev_log_index}
 
         self.send(append_entries_rpc)
 
