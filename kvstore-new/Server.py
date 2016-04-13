@@ -39,6 +39,7 @@ class Server:
     def all_receive_message(self, msg):
         if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
             if msg['term'] > self.currentTerm:
+                self.currentTerm = msg['term']
                 self.become_follower("FFFF")
 
     def leader_receive_message(self, msg):
@@ -105,7 +106,7 @@ class Server:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
                     if len(self.log) - 1 <= json_message['lastLogIndex']:
-                        self.currentTerm = json_message['term']
+                        # self.currentTerm = json_message['term']
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
                                 "leader": "FFFF",
