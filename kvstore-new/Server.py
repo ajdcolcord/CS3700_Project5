@@ -52,6 +52,7 @@ class Server:
             self.receive_append_entries_rpc_ack(msg)
 
 
+
     def candidate_receive_message(self, msg):
         """
         All Candidate Message Receiving
@@ -165,7 +166,7 @@ class Server:
         """
         prevLogTerm = 0
         if len(self.log):
-            prevLogTerm = self.log[self.last_applied]
+            prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
         entries = self.log[self.match_index[replica_id]:]
 
@@ -174,10 +175,10 @@ class Server:
                             "leader": self.id,
                             "type": "append_entries_rpc",
                             "term": self.currentTerm,
-                            "prevLogIndex": self.last_applied,
+                            "prevLogIndex": self.match_index[replica_id] - 1,
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
-                            "leaderCommit": len(self.log) - 1}
+                            "leaderLastApplied": self.last_applied}
         self.send(append_entries_rpc)
 
     def receive_append_entries_rpc(self, json_message):
@@ -192,21 +193,26 @@ class Server:
 
             if not len(self.log):
                 self.log = json_message['entries']
-                self.last_applied = json_message['prevLogIndex']
+                self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
                     self.send_append_entries_rpc_ack()
-                    #self.send_append_entries_rpc_ack(json_message['src'])
 
 
 
             if len(self.log) - 1 >= json_message['prevLogIndex']:
                 if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
-                    self.send_append_entries_rpc_ack()
+                    self.last_applied = json_message['leaderLastApplied']
+                    if len(json_message['entries']):
+                        self.send_append_entries_rpc_ack()
 
-        # else:
-        #     """ DO NOT SET ENTRIES, FAIL
-        #     """
+                if self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+                    self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+
+            else:
+                self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+
 
     def send_append_entries_rpc_ack(self):
         """
@@ -219,6 +225,20 @@ class Server:
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
                               "match_index": len(self.log)}
+
+        self.send(append_entries_rpc)
+
+    def send_append_entries_rpc_ack_decrement(self, leader_prev_log_index):
+        """
+        FOLLOWER
+        :return:
+        """
+        append_entries_rpc = {"src": self.id,
+                              "dst": self.leader_id,
+                              "leader": self.leader_id,
+                              "type": "append_entries_rpc_ack",
+                              "term": self.currentTerm,
+                              "match_index": leader_prev_log_index - 1}
 
         self.send(append_entries_rpc)
 
