@@ -113,7 +113,7 @@ class Server:
                         self.voted_for = json_message['src']
                         self.send(vote)
                         self.get_new_election_timeout()
-                        print str(self.id) + ": VOTED FOR ======" + str()
+                        print str(self.id) + ": VOTED FOR ======" + str(json_message['src'])
 
     def receive_vote(self, json_message):
         """
