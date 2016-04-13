@@ -338,7 +338,10 @@ class Server:
         if agreement_size == self.quorum_size:
             self.run_command_leader()
             self.last_applied = len(self.log)
-            self.pull_from_queue()
+            if len(self.client_queue):
+                self.pull_from_queue()
+                self.send_append_entries()
+
 
 
     def run_command_leader(self):
