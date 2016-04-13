@@ -199,7 +199,8 @@ class Server:
 
 
 
-            if len(self.log) - 1 >= json_message['prevLogIndex']:
+            elif len(self.log) - 1 >= json_message['prevLogIndex']:
+                # print str(self.id) + " -- LEN LOG INDEX = " + str(len(self.log) - 1) + ""
                 if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                     self.last_applied = json_message['leaderLastApplied']
