@@ -301,6 +301,7 @@ class Server:
         FOLLOWER
         :return:
         """
+        print "DECREMENT"
         append_entries_rpc = {"src": self.id,
                               "dst": self.leader_id,
                               "leader": self.leader_id,
