@@ -110,6 +110,7 @@ class Server:
                                 "leader": "FFFF",
                                 "type": "vote",
                                 "term": self.currentTerm}
+                        self.voted_for = json_message['src']
                         self.send(vote)
                         self.get_new_election_timeout()
 
