@@ -77,6 +77,9 @@ class Server:
         if msg['type'] == 'request_vote_rpc':
             self.receive_request_vote_rpc(msg)
 
+        if msg['type'] == 'append_entries_rpc':
+            self.receive_append_entries_rpc(msg)
+
     def reinitialize_match_index(self):
         for replica in self.replica_ids:
             self.match_index[replica] = 0
@@ -195,9 +198,9 @@ class Server:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
 
 
-            else:
-                """ DO NOT SET ENTRIES, FAIL
-                """
+            # else:
+            #     """ DO NOT SET ENTRIES, FAIL
+            #     """
 
 
     def send(self, json_message):
