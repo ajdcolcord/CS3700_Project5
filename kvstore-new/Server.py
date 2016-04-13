@@ -51,7 +51,8 @@ class Server:
         if msg['type'] == 'append_entries_rpc_ack':
             self.receive_append_entries_rpc_ack(msg)
 
-
+        if msg['type'] in ['get', 'put']:
+            self.send_fail_message(msg)
 
     def candidate_receive_message(self, msg):
         """
@@ -68,8 +69,6 @@ class Server:
         if msg['type'] in ['get', 'put']:
             self.send_redirect_to_client(msg)
 
-
-
     def follower_receive_message(self, msg):
         """
         All Follower Message Receiving
@@ -85,6 +84,14 @@ class Server:
 
         if msg['type'] in ['get', 'put']:
             self.send_redirect_to_client(msg)
+
+
+    def send_fail_message(self, client_json_message):
+        fail_message = {"src": self.id,
+                        "dst": client_json_message['src'],
+                        "leader": self.id,
+                        "type": "fail",
+                        "MID": client_json_message['MID']}
 
 
     def send_redirect_to_client(self, client_json_message):
