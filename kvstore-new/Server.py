@@ -330,7 +330,7 @@ class Server:
             self.run_command_leader()
             self.last_applied = len(self.log)
             self.pull_from_queue()
-        
+
 
     def run_command_leader(self):
         """
