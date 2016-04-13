@@ -269,7 +269,7 @@ class Server:
 
             elif len(self.log) - 1 >= json_message['prevLogIndex']:
                 if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
-                    self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+                    self.log = self.log[:json_message['prevLogIndex'] - 1] + json_message['entries']
                     self.last_applied = json_message['leaderLastApplied']
                     if len(json_message['entries']):
                         self.run_command_follower(json_message['leaderLastApplied'])
