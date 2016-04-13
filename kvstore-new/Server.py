@@ -258,7 +258,8 @@ class Server:
         if json_message['term'] >= self.currentTerm:
             self.get_new_election_timeout()
             self.leader_id = json_message['src']
-
+            print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
+                json_message['prevLogIndex'])
             if not len(self.log):
                 self.log = json_message['entries']
                 self.last_applied = json_message['leaderLastApplied']
