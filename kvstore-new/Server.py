@@ -92,6 +92,7 @@ class Server:
                         "leader": self.id,
                         "type": "fail",
                         "MID": client_json_message['MID']}
+        self.send(fail_message)
 
 
     def send_redirect_to_client(self, client_json_message):
