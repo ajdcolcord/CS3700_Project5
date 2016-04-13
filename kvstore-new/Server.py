@@ -65,8 +65,8 @@ class Server:
         if msg['type'] == 'append_entries_rpc':
             self.become_follower(msg['src'])
 
-        # if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
-        #     if msg['term'] >
+        if msg['type'] in ['get', 'put']:
+            self.send_redirect_to_client(msg)
 
 
 
@@ -82,6 +82,19 @@ class Server:
 
         if msg['type'] == 'append_entries_rpc':
             self.receive_append_entries_rpc(msg)
+
+        if msg['type'] in ['get', 'put']:
+            self.send_redirect_to_client(msg)
+
+
+    def send_redirect_to_client(self, client_json_message):
+        redirect_message = {"src": self.id,
+                            "dst": client_json_message['src'],
+                            "leader": self.leader_id,
+                            "type": "redirect",
+                            "MID": client_json_message['MID']}
+        self.send(redirect_message)
+
 
     def reinitialize_match_index(self):
         for replica in self.replica_ids:
@@ -196,8 +209,6 @@ class Server:
                 self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
                     self.send_append_entries_rpc_ack()
-
-
 
             elif len(self.log) - 1 >= json_message['prevLogIndex']:
                 # print str(self.id) + " -- LEN LOG INDEX = " + str(len(self.log) - 1) + ""
