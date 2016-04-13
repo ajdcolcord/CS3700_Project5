@@ -236,7 +236,7 @@ class Server:
 
             prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
-        entries = self.log[self.match_index[replica_id]:]
+        entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
 
         append_entries_rpc = {"src": self.id,
                             "dst": replica_id,
