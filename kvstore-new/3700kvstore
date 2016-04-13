@@ -20,6 +20,7 @@ while True:
             SERVER.initiate_election()
 
     if SERVER.node_state == "L":
+        print str(SERVER.id) + " Log Size Leader " + str(len(SERVER.log))
         if SERVER.last_applied == len(SERVER.log):  #or (SERVER.last_applied == -1 and len(SERVER.log) == 0):
             SERVER.pull_from_queue()
             if SERVER.last_applied < len(SERVER.log):
