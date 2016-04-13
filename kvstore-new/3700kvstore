@@ -20,10 +20,11 @@ while True:
             SERVER.initiate_election()
 
     if SERVER.node_state == "L":
-        # if SERVER.last_applied == len(SERVER.log) or (SERVER.last_applied == -1 and len(SERVER.log) == 0):
-        #     SERVER.pull_from_queue()
-        #     if SERVER.last_applied < len(SERVER.log) - 1:
-        #         SERVER.send_append_entries()
+        if SERVER.last_applied == len(SERVER.log):  #or (SERVER.last_applied == -1 and len(SERVER.log) == 0):
+            SERVER.pull_from_queue()
+            if SERVER.last_applied < len(SERVER.log):
+                SERVER.send_append_entries()
+
         if SERVER.heart_beat_timedout():
             SERVER.send_append_entries()
 
