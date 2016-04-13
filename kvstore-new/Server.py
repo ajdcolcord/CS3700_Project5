@@ -122,8 +122,10 @@ class Server:
         """
         if json_message['term'] == self.currentTerm and json_message['src'] not in self.voted_for_me:
             self.voted_for_me.append(json_message['src'])
+
         if len(self.voted_for_me) >= self.quorum_size:
             self.change_to_leader()
+        print str(self.id) + ": Voted For Me..." + str(self.voted_for_me)
 
     def initiate_election(self):
         """
