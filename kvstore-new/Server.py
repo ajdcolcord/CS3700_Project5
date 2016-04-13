@@ -113,6 +113,7 @@ class Server:
                         self.voted_for = json_message['src']
                         self.send(vote)
                         self.get_new_election_timeout()
+                        print str(self.id) + ": VOTED FOR ======" + str()
 
     def receive_vote(self, json_message):
         """
@@ -161,7 +162,7 @@ class Server:
 
         entries = self.log[self.match_index[replica_id]:]
 
-        request_vote_rpc = {"src": self.id,
+        append_entries_rpc = {"src": self.id,
                             "dst": replica_id,
                             "leader": self.id,
                             "type": "append_entries_rpc",
@@ -170,7 +171,7 @@ class Server:
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
                             "leaderCommit": len(self.log) - 1}
-        self.send(request_vote_rpc)
+        self.send(append_entries_rpc)
 
     def receive_append_entries_rpc(self, json_message):
         """
