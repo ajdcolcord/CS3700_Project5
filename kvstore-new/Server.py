@@ -262,7 +262,7 @@ class Server:
                 self.log = json_message['entries']
                 self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
-                    self.run_command_follower(json_message['leader_last_applied'])
+                    self.run_command_follower(json_message['leaderLastApplied'])
                     self.send_append_entries_rpc_ack()
 
             elif len(self.log) - 1 >= json_message['prevLogIndex']:
@@ -270,7 +270,7 @@ class Server:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                     self.last_applied = json_message['leaderLastApplied']
                     if len(json_message['entries']):
-                        self.run_command_follower(json_message['leader_last_applied'])
+                        self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
                 if self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
