@@ -3,7 +3,6 @@
 # Austin Colcord and Nick Scheuring
 
 import sys, socket, select, time, json, random, datetime
-from message import Message
 from Server import Server
 
 my_id = sys.argv[1]
@@ -21,10 +20,10 @@ while True:
             SERVER.initiate_election()
 
     if SERVER.node_state == "L":
-        if SERVER.last_applied == SERVER.commit_index or (SERVER.last_applied == -1 and SERVER.commit_index == 0):
-            SERVER.pull_from_queue()
-            if SERVER.last_applied < len(SERVER.log) - 1:
-                SERVER.send_append_entries()
+        # if SERVER.last_applied == len(SERVER.log) or (SERVER.last_applied == -1 and len(SERVER.log) == 0):
+        #     SERVER.pull_from_queue()
+        #     if SERVER.last_applied < len(SERVER.log) - 1:
+        #         SERVER.send_append_entries()
         if SERVER.heart_beat_timedout():
             SERVER.send_append_entries()
 

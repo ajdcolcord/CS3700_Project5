@@ -244,3 +244,17 @@ class Server:
         """
         self.heartbeat_timeout_start = datetime.datetime.now()
 
+    def election_timedout(self):
+        """
+        Checks if this election cycle of this server has timed out
+        @:return: Boolean - True if timedout, False if not
+        """
+        return (datetime.datetime.now() - self.election_timeout_start).microseconds > (self.election_timeout * 1000)
+
+    def heart_beat_timedout(self):
+        """
+        Checks if this heart_beat cycle of this server has timed out (to check if it (leader) needs to resend a heartbeat)
+        @:return: Boolean - True if timedout, False if not
+        """
+        return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > (self.heartbeat_timeout * 1000)
+
