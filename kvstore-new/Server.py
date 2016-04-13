@@ -273,7 +273,7 @@ class Server:
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
-                if self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+                elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                     self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
 
