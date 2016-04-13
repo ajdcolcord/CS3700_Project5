@@ -258,7 +258,7 @@ class Server:
         if json_message['term'] >= self.currentTerm:
             self.get_new_election_timeout()
             self.leader_id = json_message['src']
-            
+
             print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
                 json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
@@ -272,7 +272,9 @@ class Server:
             elif len(self.log) - 1 >= json_message['prevLogIndex']:
 
                 if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
+
                     self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+
                     self.last_applied = json_message['leaderLastApplied']
                     if len(json_message['entries']):
                         self.run_command_follower(json_message['leaderLastApplied'])
@@ -343,7 +345,7 @@ class Server:
         """
         Runs through the items in the log ready to be applied to the state machine, executing them each one by one
         """
-        for index in range(self.last_applied + 1, len(self.log)):
+        for index in range(self.last_applied, len(self.log)):
             entry = self.log[index]
             client_addr = entry[2]
             mess_id = entry[3]
@@ -364,7 +366,7 @@ class Server:
                     self.send(response)
                     print str(self.id) + ": SEND FAIL GET"
 
-            if command == 'put':
+            elif command == 'put':
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
