@@ -1,5 +1,4 @@
 import sys, socket, select, time, json, random, datetime
-from message import Message
 
 
 class Server:
