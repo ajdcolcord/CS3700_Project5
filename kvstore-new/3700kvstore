@@ -14,8 +14,7 @@ time.sleep(0.2)
 SERVER.get_new_election_timeout()
 
 while True:
-    print str(SERVER.id) + ": " + str(SERVER.node_state) + " voted_for= " + str(SERVER.voted_for)
-    
+
     if SERVER.node_state in ["F", "C"]:
         if SERVER.election_timedout():
             SERVER.initiate_election()
