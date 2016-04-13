@@ -52,7 +52,9 @@ class Server:
             self.receive_append_entries_rpc_ack(msg)
 
         if msg['type'] in ['get', 'put']:
-            self.send_fail_message(msg)
+            self.add_to_client_queue(msg)
+
+            # self.send_fail_message(msg)
 
     def candidate_receive_message(self, msg):
         """
@@ -84,6 +86,53 @@ class Server:
 
         if msg['type'] in ['get', 'put']:
             self.send_redirect_to_client(msg)
+
+    def add_to_client_queue(self, json_message):
+        """
+        Adds a new incoming message (get or put) from a client into the 'buffer' - client_queue
+        @:param message - Message object - the message to add to the queue
+        @:return Void
+        """
+        # str(self.id) + ": ADDING TO CLIENT QUEUE"
+        self.client_queue.append(json_message)
+
+    def pull_from_queue(self):
+        """
+        Loads all the entries in the client_queue into our log
+        @:return: Void
+        """
+        for entry in self.client_queue:
+            self.add_client_entry_to_log(entry)
+        self.client_queue = []
+
+    def add_client_entry_to_log(self, message):
+        """
+        Effect: Runs the necessary actions when receiving a client message (get or put)
+        @:param message - Message object - the message to act upon
+        @:return: Void
+        """
+        if message['type'] == 'get':
+            self.add_entry((message['type'],
+                            (message['key'])),
+                           self.currentTerm,
+                           message['src'],
+                           message['MID'])
+        elif message['type'] == 'put':
+            self.add_entry((message['type'],
+                            (message['key'], message['value'])),
+                           self.currentTerm,
+                           message['src'],
+                           message['MID'])
+
+    def add_entry(self, command, term, client_address, mid):
+        """
+        Adds a new entry with the given command and the term into the log of this server. Increments
+        the commit index of this server to the length of the log.
+        @:param: command - One of:  - Tuple(String, Tuple(key, value))
+                                    - Tuple(String, Tuple(key)
+        :return: Void
+        """
+        self.log.append((command, term, client_address, mid))
 
 
     def send_fail_message(self, client_json_message):
@@ -216,6 +265,7 @@ class Server:
                 self.log = json_message['entries']
                 self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
+                    self.run_command_follower(json_message['leader_last_applied'])
                     self.send_append_entries_rpc_ack()
 
             elif len(self.log) - 1 >= json_message['prevLogIndex']:
@@ -224,6 +274,7 @@ class Server:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                     self.last_applied = json_message['leaderLastApplied']
                     if len(json_message['entries']):
+                        self.run_command_follower(json_message['leader_last_applied'])
                         self.send_append_entries_rpc_ack()
 
                 if self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
@@ -270,6 +321,77 @@ class Server:
         """
         if json_msg['term'] == self.currentTerm:
             self.match_index[json_msg['src']] = self.match_index[json_msg['match_index']]
+            self.check_for_quorum()
+
+    def check_for_quorum(self):
+
+        agreement_size = 1
+        for replica in self.match_index:
+            if self.match_index[replica] == len(self.log):
+                agreement_size += 1
+
+        if agreement_size == self.quorum_size:
+            self.run_command_leader()
+            self.last_applied = len(self.log)
+
+    def run_command_leader(self):
+        """
+        Runs through the items in the log ready to be applied to the state machine, executing them each one by one
+        """
+        for index in range(self.last_applied + 1, len(self.log)):
+            entry = self.log[index]
+            client_addr = entry[2]
+            mess_id = entry[3]
+            command = entry[0][0]
+            content = entry[0][1]
+
+            if command == 'get':
+                key = content
+                value = self.key_value_store.get(key)
+                if value:
+                    response = {'src': self.id, 'dst': client_addr, 'leader': self.id,
+                                'type': 'ok', 'MID': mess_id, 'value': value}
+                    self.send(response)
+                else:
+                    response = {"src": self.id, "dst": client_addr, "leader": self.id,
+                                "type": "fail", "MID": mess_id, "value": ""}
+                    self.send(response)
+
+            if command == 'put':
+                key = content[0]
+                value = content[1]
+                self.put_into_store(key, value)
+                message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
+                           'type': 'ok', 'MID': mess_id}
+
+                self.send(message)
+
+    def run_command_follower(self, leader_last_applied):
+        """
+        Runs through the items in the log ready to be applied to the state machine, executing them each one by one
+        @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
+        @:return: Void
+        """
+        for index in range(self.last_applied, leader_last_applied):
+            if len(self.log) - 1 >= index:
+                entry = self.log[index]
+                command = entry[0][0]
+                content = entry[0][1]
+                if command == 'put':
+                    key = content[0]
+                    value = content[1]
+                    self.put_into_store(key, value)
+                self.last_applied += index
+
+    def put_into_store(self, key, value):
+        """
+        Store the given key and value into self.key_value_store
+        @:param key - String - the key to add
+        @:param value - String - the value to add at the location of key
+        @:return: Void
+        """
+        self.key_value_store[key] = value
+
 
 
     def send(self, json_message):
