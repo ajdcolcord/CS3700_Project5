@@ -317,7 +317,7 @@ class Server:
         """
         if json_msg['term'] == self.currentTerm:
             print json_msg
-            self.match_index[json_msg['src']] = self.match_index[json_msg['match_index']]
+            self.match_index[json_msg['src']] = json_msg['match_index']
             self.check_for_quorum()
 
     def check_for_quorum(self):
