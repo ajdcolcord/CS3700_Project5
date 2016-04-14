@@ -1,5 +1,6 @@
 import sys, socket, select, time, json, random, datetime
 
+DEBUG = False
 
 class Server:
     """
@@ -35,6 +36,7 @@ class Server:
         self.log = []
 
         self.key_value_store = {}
+
 
     def all_receive_message(self, msg):
         if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
@@ -259,8 +261,9 @@ class Server:
             self.get_new_election_timeout()
             self.leader_id = json_message['src']
 
-            print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
-                json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
+            if DEBUG:
+                print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
+                    json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
             if not len(self.log):
                 self.log = json_message['entries']
@@ -307,7 +310,8 @@ class Server:
         FOLLOWER
         :return:
         """
-        print "DECREMENT"
+        if DEBUG:
+            print "DECREMENT"
         append_entries_rpc = {"src": self.id,
                               "dst": self.leader_id,
                               "leader": self.leader_id,
@@ -325,7 +329,8 @@ class Server:
         :return:
         """
         if json_msg['term'] == self.currentTerm:
-            print json_msg
+            if DEBUG:
+                print json_msg
             self.match_index[json_msg['src']] = json_msg['match_index']
             self.check_for_quorum()
 
@@ -363,12 +368,12 @@ class Server:
                     response = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                                 'type': 'ok', 'MID': mess_id, 'value': value}
                     self.send(response)
-                    print str(self.id) + ": SEND OK GET"
+                    if DEBUG: print str(self.id) + ": SEND OK GET"
                 else:
                     response = {"src": self.id, "dst": client_addr, "leader": self.id,
                                 "type": "fail", "MID": mess_id, "value": ""}
                     self.send(response)
-                    print str(self.id) + ": SEND FAIL GET"
+                    if DEBUG: print str(self.id) + ": SEND FAIL GET"
 
             elif command == 'put':
                 key = content[0]
@@ -377,7 +382,7 @@ class Server:
                 message = {'src': self.id, 'dst': client_addr, 'leader': self.id,
                            'type': 'ok', 'MID': mess_id}
 
-                print str(self.id) + ": SEND OK PUT"
+                if DEBUG: print str(self.id) + ": SEND OK PUT"
                 self.send(message)
 
     def run_command_follower(self, leader_last_applied):
@@ -396,7 +401,7 @@ class Server:
                 value = content[1]
                 self.put_into_store(key, value)
 
-        print str(self.id) + " Follower Log Size " + str(len(self.log))
+        if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
         # TODO: POSSIBLE POINT OF FAILURE
         self.last_applied = min(len(self.log), leader_last_applied)
 
@@ -424,7 +429,7 @@ class Server:
         Execute the actions needed to change to a leader status, resetting timeouts, leader ID, etc.
         @:return: Void
         """
-        print str(self.id) + ": BECAME LEADER"
+        if DEBUG: print str(self.id) + ": BECAME LEADER"
         self.reinitialize_match_index()
         self.get_new_election_timeout()
         self.node_state = "L"
