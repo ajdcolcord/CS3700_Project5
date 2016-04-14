@@ -243,7 +243,7 @@ class Server:
                             "leader": self.id,
                             "type": "append_entries_rpc",
                             "term": self.currentTerm,
-                            "prevLogIndex": self.match_index[replica_id], # - 1,
+                            "prevLogIndex": self.match_index[replica_id] - 1,
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
                             "leaderLastApplied": self.last_applied}
