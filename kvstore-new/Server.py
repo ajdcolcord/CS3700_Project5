@@ -239,8 +239,12 @@ class Server:
         Create a new append_entries_rpc, returning the json
         :return: JSON
         """
+        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+            self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
+
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
+
 
             prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
