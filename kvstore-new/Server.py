@@ -46,7 +46,10 @@ class Server:
                 if msg['type'] == 'append_entries_rpc':
                     self.become_follower(msg['src'])
                 else:
-                    self.become_follower("FFFF")
+                    if not self.node_state == "F":
+                        self.become_follower("FFFF")
+                    else:
+                        self.become_follower(self.leader_id)
 
     def leader_receive_message(self, msg):
         """
