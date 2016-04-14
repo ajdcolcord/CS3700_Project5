@@ -386,18 +386,19 @@ class Server:
         @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
         @:return: Void
         """
-        for index in range(self.last_applied, leader_last_applied):
-            if len(self.log) - 1 >= index:
-                entry = self.log[index]
-                command = entry[0][0]
-                content = entry[0][1]
-                if command == 'put':
-                    key = content[0]
-                    value = content[1]
-                    self.put_into_store(key, value)
-                self.last_applied = index
+        for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
+            #if len(self.log) - 1 >= index:
+            entry = self.log[index]
+            command = entry[0][0]
+            content = entry[0][1]
+            if command == 'put':
+                key = content[0]
+                value = content[1]
+                self.put_into_store(key, value)
+            self.last_applied = index
 
-        #self.last_applied = leader_last_applied
+        # TODO: POSSIBLE POINT OF FAILURE
+        #self.last_applied = min(len(self.log), leader_last_applied)
 
     def put_into_store(self, key, value):
         """
@@ -407,8 +408,6 @@ class Server:
         @:return: Void
         """
         self.key_value_store[key] = value
-
-
 
     def send(self, json_message):
         """
