@@ -448,6 +448,7 @@ class Server:
     def send_redirects_from_client_queue(self):
         for message in self.client_queue:
             self.send_redirect_to_client(message)
+        self.client_queue = []
 
     def get_new_election_timeout(self):
         """
