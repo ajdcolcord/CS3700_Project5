@@ -264,7 +264,7 @@ class Server:
 
             if not len(self.log):
                 self.log = json_message['entries']
-                self.last_applied = json_message['leaderLastApplied']
+                #self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
                     self.run_command_follower(json_message['leaderLastApplied'])
                     self.send_append_entries_rpc_ack()
@@ -275,7 +275,7 @@ class Server:
 
                     self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
 
-                    self.last_applied = json_message['leaderLastApplied']
+                    #self.last_applied = json_message['leaderLastApplied']
                     if len(json_message['entries']):
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
@@ -395,7 +395,9 @@ class Server:
                     key = content[0]
                     value = content[1]
                     self.put_into_store(key, value)
-                self.last_applied += index
+                self.last_applied = index
+
+        #self.last_applied = leader_last_applied
 
     def put_into_store(self, key, value):
         """
