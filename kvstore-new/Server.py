@@ -42,7 +42,11 @@ class Server:
         if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
             if msg['term'] > self.currentTerm:
                 self.currentTerm = msg['term']
-                self.become_follower("FFFF")
+
+                if msg['type'] == 'append_entries_rpc':
+                    self.become_follower(msg['src'])
+                else:
+                    self.become_follower("FFFF")
 
     def leader_receive_message(self, msg):
         """
