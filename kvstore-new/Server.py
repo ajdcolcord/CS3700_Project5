@@ -1,6 +1,6 @@
 import sys, socket, select, time, json, random, datetime
 
-DEBUG = False
+DEBUG = True
 
 class Server:
     """
@@ -17,7 +17,7 @@ class Server:
         self.replica_ids = replica_ids
         self.election_timeout = random.randint(150, 300)
         self.election_timeout_start = datetime.datetime.now()
-        self.heartbeat_timeout = 120  # self.election_timeout / 2
+        self.heartbeat_timeout = 120
         self.heartbeat_timeout_start = datetime.datetime.now()
         self.currentTerm = 0
         self.voted_for = None
@@ -434,6 +434,8 @@ class Server:
         self.get_new_election_timeout()
         self.node_state = "L"
         self.leader_id = self.id
+
+        self.pull_from_queue()
         self.send_append_entries()
 
     def become_follower(self, leader_id):
