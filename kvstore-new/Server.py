@@ -69,7 +69,7 @@ class Server:
             self.become_follower(msg['src'])
 
         if msg['type'] in ['get', 'put']:
-            self.send_redirect_to_client(msg)
+            self.add_to_client_queue(msg)
 
     def follower_receive_message(self, msg):
         """
@@ -395,7 +395,6 @@ class Server:
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
-            # self.last_applied = index
 
         print str(self.id) + " Follower Log Size " + str(len(self.log))
         # TODO: POSSIBLE POINT OF FAILURE
@@ -444,6 +443,11 @@ class Server:
         self.voted_for_me = []
         self.voted_for = None
         self.leader_id = leader_id
+        self.send_redirects_from_client_queue()
+
+    def send_redirects_from_client_queue(self):
+        for message in self.client_queue:
+            self.send_redirect_to_client(message)
 
     def get_new_election_timeout(self):
         """
