@@ -255,7 +255,7 @@ class Server:
                             "leader": self.id,
                             "type": "append_entries_rpc",
                             "term": self.currentTerm,
-                            "prevLogIndex": self.match_index[replica_id] - 1,
+                            "prevLogIndex": max(0, self.match_index[replica_id] - 1), # - 1,
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
                             "leaderLastApplied": self.last_applied}
@@ -357,6 +357,9 @@ class Server:
             if len(self.client_queue):
                 self.pull_from_queue()
                 self.send_append_entries()
+
+
+
 
 
 
