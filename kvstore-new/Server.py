@@ -395,10 +395,11 @@ class Server:
                 key = content[0]
                 value = content[1]
                 self.put_into_store(key, value)
-            self.last_applied = index
+            # self.last_applied = index
 
+        print str(self.id) + " Follower Log Size " + str(len(self.log))
         # TODO: POSSIBLE POINT OF FAILURE
-        #self.last_applied = min(len(self.log), leader_last_applied)
+        self.last_applied = min(len(self.log), leader_last_applied)
 
     def put_into_store(self, key, value):
         """
