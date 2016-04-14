@@ -56,7 +56,6 @@ class Server:
         if msg['type'] in ['get', 'put']:
             self.add_to_client_queue(msg)
 
-            # self.send_fail_message(msg)
 
     def candidate_receive_message(self, msg):
         """
@@ -67,8 +66,8 @@ class Server:
         if msg['type'] == 'vote':
             self.receive_vote(msg)
 
-        if msg['type'] == 'append_entries_rpc':
-            self.become_follower(msg['src'])
+        # if msg['type'] == 'append_entries_rpc':
+        #     self.become_follower(msg['src'])
 
         if msg['type'] in ['get', 'put']:
             self.add_to_client_queue(msg)
