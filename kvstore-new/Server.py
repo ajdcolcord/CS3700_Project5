@@ -329,7 +329,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": len(self.log)} # max(0, leader_prev_log_index)} #TODO: SHOULD THiS STILL BE THIS?????????????????????
+                              "match_index": self.last_applied} #len(self.log)} # max(0, leader_prev_log_index)} #TODO: SHOULD THiS STILL BE THIS?????????????????????
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
@@ -401,19 +401,20 @@ class Server:
         @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
         @:return: Void
         """
-        for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
-            #if len(self.log) - 1 >= index:
-            entry = self.log[index]
-            command = entry[0][0]
-            content = entry[0][1]
-            if command == 'put':
-                key = content[0]
-                value = content[1]
-                self.put_into_store(key, value)
+        if self.last_applied < leader_last_applied:
+            for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
+                #if len(self.log) - 1 >= index:
+                entry = self.log[index]
+                command = entry[0][0]
+                content = entry[0][1]
+                if command == 'put':
+                    key = content[0]
+                    value = content[1]
+                    self.put_into_store(key, value)
 
-        if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
-        # TODO: POSSIBLE POINT OF FAILURE
-        self.last_applied = min(len(self.log), leader_last_applied)
+            if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
+            # TODO: POSSIBLE POINT OF FAILURE
+            self.last_applied = min(len(self.log), leader_last_applied)
 
     def put_into_store(self, key, value):
         """
