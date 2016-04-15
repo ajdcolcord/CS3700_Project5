@@ -359,10 +359,6 @@ class Server:
                 self.send_append_entries()
 
 
-
-
-
-
     def run_command_leader(self):
         """
         Runs through the items in the log ready to be applied to the state machine, executing them each one by one
@@ -397,6 +393,23 @@ class Server:
 
                 if DEBUG: print str(self.id) + ": SEND OK PUT"
                 self.send(message)
+        if len(self.log) == 500:
+            self.write_into_log_file()
+
+
+
+    def write_into_log_file(self):
+        filename = str(self.id) + "_log"
+        target = open(filename, 'w')
+
+        if len(self.log) == 500:
+            for entry in self.log:
+                target.write(str(entry))
+                target.write('\n')
+        target.close()
+
+
+
 
     def run_command_follower(self, leader_last_applied):
         """
@@ -417,6 +430,10 @@ class Server:
         if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
         # TODO: POSSIBLE POINT OF FAILURE
         self.last_applied = min(len(self.log), leader_last_applied)
+
+        if len(self.log) == 500:
+            self.write_into_log_file()
+
 
     def put_into_store(self, key, value):
         """
