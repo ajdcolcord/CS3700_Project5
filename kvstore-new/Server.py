@@ -277,31 +277,33 @@ class Server:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
                     json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
-            if not len(self.log):
-                self.log = json_message['entries']
-                #self.last_applied = json_message['leaderLastApplied']
-                if len(self.log):
-                    self.run_command_follower(json_message['leaderLastApplied'])
-                    self.send_append_entries_rpc_ack()
+            if not len(json_message['entries']):
+                self.run_command_follower(json_message['leaderLastApplied'])
 
-            elif len(self.log) - 1 >= json_message['prevLogIndex']:
-
-                if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
-
-                    #if len(json_message['entries']): # TODO: THIS IS FOR EMPTY HEARTBEATS
-                    self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
-
+            else:
+                if not len(self.log):
+                    self.log = json_message['entries']
                     #self.last_applied = json_message['leaderLastApplied']
-                    if len(json_message['entries']):
+                    if len(self.log):
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
-                elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
-                    self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
-                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+                elif len(self.log) - 1 >= json_message['prevLogIndex']:
 
-            else:
-                self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+                    if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
+                        self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+
+                        #self.last_applied = json_message['leaderLastApplied']
+                        if len(json_message['entries']):
+                            self.run_command_follower(json_message['leaderLastApplied'])
+                            self.send_append_entries_rpc_ack()
+
+                    elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+                        self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+                        self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+
+                else:
+                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
 
 
     def send_append_entries_rpc_ack(self):
@@ -414,19 +416,19 @@ class Server:
         @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
         @:return: Void
         """
-        for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
-            #if len(self.log) - 1 >= index:
-            entry = self.log[index]
-            command = entry[0][0]
-            content = entry[0][1]
-            if command == 'put':
-                key = content[0]
-                value = content[1]
-                self.put_into_store(key, value)
+        if self.last_applied >= min(len(self.log), leader_last_applied):
+            for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
+                entry = self.log[index]
+                command = entry[0][0]
+                content = entry[0][1]
+                if command == 'put':
+                    key = content[0]
+                    value = content[1]
+                    self.put_into_store(key, value)
 
-        if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
-        # TODO: POSSIBLE POINT OF FAILURE
-        self.last_applied = min(len(self.log), leader_last_applied)
+            if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
+
+            self.last_applied = max(self.last_applied, min(len(self.log), leader_last_applied))
 
         if DEBUG and len(self.log) == 500:
             self.write_into_log_file()
