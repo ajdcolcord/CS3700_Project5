@@ -239,7 +239,8 @@ class Server:
         Create a new append_entries_rpc, returning the json
         :return: JSON
         """
-        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+        if DEBUG:
+            print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
             self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
@@ -287,8 +288,8 @@ class Server:
 
                 if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
 
-                    if len(json_message['entries']):
-                        self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+                    #if len(json_message['entries']): # TODO: THIS IS FOR EMPTY HEARTBEATS
+                    self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
 
                     #self.last_applied = json_message['leaderLastApplied']
                     if len(json_message['entries']):
@@ -360,7 +361,6 @@ class Server:
                 self.pull_from_queue()
                 self.send_append_entries()
 
-
     def run_command_leader(self):
         """
         Runs through the items in the log ready to be applied to the state machine, executing them each one by one
@@ -395,10 +395,8 @@ class Server:
 
                 if DEBUG: print str(self.id) + ": SEND OK PUT"
                 self.send(message)
-        if len(self.log) == 500:
+        if DEBUG and len(self.log) == 500:
             self.write_into_log_file()
-
-
 
     def write_into_log_file(self):
         filename = str(self.id) + "_log"
@@ -409,9 +407,6 @@ class Server:
                 target.write(str(entry))
                 target.write('\n')
         target.close()
-
-
-
 
     def run_command_follower(self, leader_last_applied):
         """
@@ -433,7 +428,7 @@ class Server:
         # TODO: POSSIBLE POINT OF FAILURE
         self.last_applied = min(len(self.log), leader_last_applied)
 
-        if len(self.log) == 500:
+        if DEBUG and len(self.log) == 500:
             self.write_into_log_file()
 
 
