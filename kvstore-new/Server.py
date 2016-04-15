@@ -327,7 +327,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": self.last_applied} #TODO: SHOULD THiS STILL BE THIS?????????????????????
+                              "match_index": min(len(self.log), self.last_applied)} #TODO: SHOULD THiS STILL BE THIS?????????????????????
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
