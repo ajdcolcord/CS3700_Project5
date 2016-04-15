@@ -190,7 +190,7 @@ class Server:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
                     if len(self.log) - 1 <= json_message['lastLogIndex']:
-                        self.currentTerm = json_message['term'] # TODO: JUST ADDED
+                        #self.currentTerm = json_message['term'] # TODO: JUST ADDED
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
                                 "leader": "FFFF",
@@ -327,7 +327,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": max(0, leader_prev_log_index)} #TODO: SHOULD THiS STILL BE THIS?????????????????????
+                              "match_index": len(self.log)} # max(0, leader_prev_log_index)} #TODO: SHOULD THiS STILL BE THIS?????????????????????
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
@@ -458,17 +458,36 @@ class Server:
         @:param leader_id - Int - the ID of the new leader
         @:return Void
         """
+        was_leader = self.node_state == "L"
         self.node_state = "F"
         self.get_new_election_timeout()
         self.voted_for_me = []
         self.voted_for = None
         self.leader_id = leader_id
+        if was_leader:
+            self.send_redirects_from_unapplied_log()
+
         self.send_redirects_from_client_queue()
+
+    def send_redirects_from_unapplied_log(self):
+        for index in range(self.last_applied, len(self.log)):
+            entry = self.log[index]
+            client_addr = entry[2]
+            mess_id = entry[3]
+
+            redirect_message = {"src": self.id,
+                                "dst": client_addr,
+                                "leader": self.leader_id,
+                                "type": "redirect",
+                                "MID": mess_id}
+
+            self.send(redirect_message)
 
     def send_redirects_from_client_queue(self):
         for message in self.client_queue:
             self.send_redirect_to_client(message)
         self.client_queue = []
+
 
     def get_new_election_timeout(self):
         """
