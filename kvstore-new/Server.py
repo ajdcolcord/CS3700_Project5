@@ -519,4 +519,3 @@ class Server:
         @:return: Boolean - True if timedout, False if not
         """
         return (datetime.datetime.now() - self.heartbeat_timeout_start).microseconds > (self.heartbeat_timeout * 1000)
-
