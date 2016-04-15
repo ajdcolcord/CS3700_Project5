@@ -181,18 +181,16 @@ class Server:
                             "leader": "FFFF",
                             "type": "request_vote_rpc",
                             "term": self.currentTerm,
-                            "lastApplied": self.last_applied,
+                            "lastLogIndex": len(self.log) - 1,
                             "lastLogTerm": self.get_lastLogTerm()}
-                            # "lastLogIndex": len(self.log) - 1,
         self.send(request_vote_rpc)
 
     def receive_request_vote_rpc(self, json_message):
         if json_message['term'] >= self.currentTerm:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
-                    if self.last_applied <= json_message['lastApplied']:
-                    #if len(self.log) - 1 <= json_message['lastLogIndex']:
-                        #self.currentTerm = json_message['term'] # TODO: JUST ADDED
+                    if len(self.log) - 1 <= json_message['lastLogIndex']:
+                        # self.currentTerm = json_message['term']
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
                                 "leader": "FFFF",
@@ -242,7 +240,7 @@ class Server:
         :return: JSON
         """
         print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
-            self.match_index[replica_id]) + " lead_last_applied: " + str(self.last_applied) + " len_lead_log= " + str(len(self.log)) + "\n"
+            self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
@@ -269,42 +267,38 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm and self.leader_id == json_message['src']:
+        if json_message['term'] >= self.currentTerm:
             self.get_new_election_timeout()
+            self.leader_id = json_message['src']
 
-            if len(json_message['entries']):
-                self.leader_id = json_message['src']
+            if DEBUG:
+                print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
+                    json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
-                if DEBUG:
-                    print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
-                        json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
+            if not len(self.log):
+                self.log = json_message['entries']
+                #self.last_applied = json_message['leaderLastApplied']
+                if len(self.log):
+                    self.run_command_follower(json_message['leaderLastApplied'])
+                    self.send_append_entries_rpc_ack()
 
-                if not len(self.log):
-                    self.log = json_message['entries']
+            elif len(self.log) - 1 >= json_message['prevLogIndex']:
+
+                if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
+
+                    self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+
                     #self.last_applied = json_message['leaderLastApplied']
-                    if len(self.log):
+                    if len(json_message['entries']):
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
-                elif len(self.log) - 1 >= json_message['prevLogIndex']:
-
-                    if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
-
-                        self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
-
-                        #self.last_applied = json_message['leaderLastApplied']
-                        if len(json_message['entries']):
-                            self.run_command_follower(json_message['leaderLastApplied'])
-                            self.send_append_entries_rpc_ack()
-
-                    elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
-                        self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
-                        self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
-
-                else:
+                elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+                    self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                     self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+
             else:
-                self.run_command_follower(json_message['leaderLastApplied'])
+                self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
 
 
     def send_append_entries_rpc_ack(self):
@@ -333,7 +327,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": self.last_applied} #len(self.log)} # max(0, leader_prev_log_index)} #TODO: SHOULD THiS STILL BE THIS?????????????????????
+                              "match_index": len(self.log)}
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
@@ -363,6 +357,11 @@ class Server:
             if len(self.client_queue):
                 self.pull_from_queue()
                 self.send_append_entries()
+
+
+
+
+
 
     def run_command_leader(self):
         """
@@ -405,20 +404,19 @@ class Server:
         @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
         @:return: Void
         """
-        if self.last_applied < leader_last_applied:
-            for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
-                #if len(self.log) - 1 >= index:
-                entry = self.log[index]
-                command = entry[0][0]
-                content = entry[0][1]
-                if command == 'put':
-                    key = content[0]
-                    value = content[1]
-                    self.put_into_store(key, value)
+        for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
+            #if len(self.log) - 1 >= index:
+            entry = self.log[index]
+            command = entry[0][0]
+            content = entry[0][1]
+            if command == 'put':
+                key = content[0]
+                value = content[1]
+                self.put_into_store(key, value)
 
-            if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
-            # TODO: POSSIBLE POINT OF FAILURE
-            self.last_applied = min(len(self.log), leader_last_applied)
+        if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
+        # TODO: POSSIBLE POINT OF FAILURE
+        self.last_applied = min(len(self.log), leader_last_applied)
 
     def put_into_store(self, key, value):
         """
@@ -460,36 +458,17 @@ class Server:
         @:param leader_id - Int - the ID of the new leader
         @:return Void
         """
-        was_leader = self.node_state == "L"
         self.node_state = "F"
         self.get_new_election_timeout()
         self.voted_for_me = []
         self.voted_for = None
         self.leader_id = leader_id
-        # if was_leader:
-        #     self.send_redirects_from_unapplied_log()
-
         self.send_redirects_from_client_queue()
-
-    def send_redirects_from_unapplied_log(self):
-        for index in range(self.last_applied, len(self.log)):
-            entry = self.log[index]
-            client_addr = entry[2]
-            mess_id = entry[3]
-
-            redirect_message = {"src": self.id,
-                                "dst": client_addr,
-                                "leader": self.leader_id,
-                                "type": "redirect",
-                                "MID": mess_id}
-
-            self.send(redirect_message)
 
     def send_redirects_from_client_queue(self):
         for message in self.client_queue:
             self.send_redirect_to_client(message)
         self.client_queue = []
-
 
     def get_new_election_timeout(self):
         """
