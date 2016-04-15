@@ -181,15 +181,17 @@ class Server:
                             "leader": "FFFF",
                             "type": "request_vote_rpc",
                             "term": self.currentTerm,
-                            "lastLogIndex": len(self.log) - 1,
+                            "lastApplied": self.last_applied,
                             "lastLogTerm": self.get_lastLogTerm()}
+                            # "lastLogIndex": len(self.log) - 1,
         self.send(request_vote_rpc)
 
     def receive_request_vote_rpc(self, json_message):
         if json_message['term'] >= self.currentTerm:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
-                    if len(self.log) - 1 <= json_message['lastLogIndex']:
+                    if self.last_applied <= json_message['lastApplied']:
+                    #if len(self.log) - 1 <= json_message['lastLogIndex']:
                         #self.currentTerm = json_message['term'] # TODO: JUST ADDED
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
