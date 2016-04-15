@@ -360,11 +360,6 @@ class Server:
                 self.pull_from_queue()
                 self.send_append_entries()
 
-
-
-
-
-
     def run_command_leader(self):
         """
         Runs through the items in the log ready to be applied to the state machine, executing them each one by one
@@ -466,8 +461,8 @@ class Server:
         self.voted_for_me = []
         self.voted_for = None
         self.leader_id = leader_id
-        if was_leader:
-            self.send_redirects_from_unapplied_log()
+        # if was_leader:
+        #     self.send_redirects_from_unapplied_log()
 
         self.send_redirects_from_client_queue()
 
