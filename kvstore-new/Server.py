@@ -269,38 +269,42 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm:
+        if json_message['term'] >= self.currentTerm and self.leader_id == json_message['src']:
             self.get_new_election_timeout()
-            self.leader_id = json_message['src']
 
-            if DEBUG:
-                print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
-                    json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
+            if len(json_message['entries']):
+                self.leader_id = json_message['src']
 
-            if not len(self.log):
-                self.log = json_message['entries']
-                #self.last_applied = json_message['leaderLastApplied']
-                if len(self.log):
-                    self.run_command_follower(json_message['leaderLastApplied'])
-                    self.send_append_entries_rpc_ack()
+                if DEBUG:
+                    print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
+                        json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
-            elif len(self.log) - 1 >= json_message['prevLogIndex']:
-
-                if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
-
-                    self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
-
+                if not len(self.log):
+                    self.log = json_message['entries']
                     #self.last_applied = json_message['leaderLastApplied']
-                    if len(json_message['entries']):
+                    if len(self.log):
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
-                elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
-                    self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
-                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+                elif len(self.log) - 1 >= json_message['prevLogIndex']:
 
+                    if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
+
+                        self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+
+                        #self.last_applied = json_message['leaderLastApplied']
+                        if len(json_message['entries']):
+                            self.run_command_follower(json_message['leaderLastApplied'])
+                            self.send_append_entries_rpc_ack()
+
+                    elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+                        self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+                        self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+
+                else:
+                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
             else:
-                self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+                self.run_command_follower(json_message['leaderLastApplied'])
 
 
     def send_append_entries_rpc_ack(self):
