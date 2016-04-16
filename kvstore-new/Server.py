@@ -34,7 +34,6 @@ class Server:
         self.match_index = {}
         self.reinitialize_match_index()
         self.log = []
-        self.add_entry('startup', 0, "FFFF", 12345)
 
 
 
@@ -391,7 +390,7 @@ class Server:
                 agreement_size += 1
 
         print "AGREEMENT SIZE = " + str(agreement_size) + " InitialAgreements = " + str(self.initial_agreements)
-        if agreement_size == self.quorum_size and self.initial_agreements == self.quorum_size:
+        if (agreement_size == self.quorum_size and len(self.log) > 1) or self.initial_agreements == self.quorum_size:
             print "REACHED QUORUM"
             self.run_command_leader()
             self.last_applied = len(self.log) - 1
