@@ -46,11 +46,11 @@ class Server:
                 if msg['type'] == 'append_entries_rpc':
                     if self.node_state == "L" and len(self.log) <= msg['logLength']:
                             self.become_follower(msg['src'])
-                else:
-                    if not self.node_state == "F":
-                        self.become_follower("FFFF")
-                    else:
-                        self.become_follower(self.leader_id)
+                # else:
+                #     if not self.node_state == "F":
+                #         self.become_follower("FFFF")
+                #     else:
+                #         self.become_follower(self.leader_id)
 
     def leader_receive_message(self, msg):
         """
