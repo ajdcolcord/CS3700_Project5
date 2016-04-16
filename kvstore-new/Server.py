@@ -258,8 +258,8 @@ class Server:
         :return: JSON
         """
         # if DEBUG:
-        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
-            self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
+        # print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+        #     self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
         if len(self.log): #and self.match_index[replica_id] > 0:
