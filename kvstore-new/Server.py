@@ -266,7 +266,13 @@ class Server:
             # prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
             prevLogTerm = self.log[self.match_index[replica_id]][1]
 
-        entries = self.log[self.match_index[replica_id] + 1: self.match_index[replica_id] + 50]
+        if self.match_index[replica_id] == 0:
+            entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
+        else:
+            entries = self.log[self.match_index[replica_id] + 1: self.match_index[replica_id] + 50]
+
+        #entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
+
         if len(self.log) > 1 and self.log[self.match_index[replica_id]] > 1:
             print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " with log entry " + str(self.log[self.match_index[replica_id]]) + ", " + str(self.log[self.match_index[replica_id] - 1]) + " for replica " + str(replica_id)
         elif len(self.log):
