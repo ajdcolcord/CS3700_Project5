@@ -69,8 +69,8 @@ class Server:
         @:param msg - the JSON message received
         @:return: Void
         """
-        if msg['type'] == 'append_entries_rpc_ack':
-            self.receive_append_entries_rpc_ack(msg)
+        # if msg['type'] == 'append_entries_rpc_ack':
+        #     self.receive_append_entries_rpc_ack(msg)
 
         if msg['type'] in ['get', 'put']:
             self.add_to_client_queue(msg)
@@ -98,11 +98,11 @@ class Server:
         @:return: Void
         """
 
-        if msg['type'] == 'request_vote_rpc':
-            self.receive_request_vote_rpc(msg)
+        # if msg['type'] == 'request_vote_rpc':
+        #     self.receive_request_vote_rpc(msg)
 
-        if msg['type'] == 'append_entries_rpc':
-            self.receive_append_entries_rpc(msg)
+        # if msg['type'] == 'append_entries_rpc':
+        #     self.receive_append_entries_rpc(msg)
 
         if msg['type'] in ['get', 'put']:
             self.send_redirect_to_client(msg)
