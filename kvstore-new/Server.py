@@ -287,8 +287,8 @@ class Server:
         :return:
         """
         if json_message['term'] >= self.currentTerm:  # and json_message['leaderLogLength'] >= len(self.log):
-            if len(self.log):
-                print str(self.id) + " follower received from " + str(json_message['src']) + " match_index of = " + str(max(0, json_message['prevLogIndex'])) + " with log entry " + str(self.log[json_message['prevLogIndex']])
+            # if len(self.log):
+            # print str(self.id) + " follower received from " + str(json_message['src']) + " match_index of = " + str(max(0, json_message['prevLogIndex'])) + " with log entry " + str(self.log[json_message['prevLogIndex']])
 
             self.currentTerm = json_message['term']
             self.become_follower(json_message['src'])
