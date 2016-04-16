@@ -316,7 +316,7 @@ class Server:
                         print "Adding to log entries"
                         self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
 
-
+                        print "len follower log" + str(len(self.log))
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
