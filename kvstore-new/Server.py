@@ -35,37 +35,21 @@ class Server:
         self.reinitialize_match_index()
         self.log = []
 
-
-
         self.key_value_store = {}
 
 
-        self.initial_agreements = 1
-
     def all_receive_message(self, msg):
-        # if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
-        #     if msg['term'] > self.currentTerm:
-        #         self.currentTerm = msg['term']
-        #
-        #         if msg['type'] == 'append_entries_rpc':
-        #             self.become_follower(msg['src'])
-        #         else:
-        #             if not self.node_state == "F":
-        #                 self.become_follower("FFFF")
-        #             else:
-        #                 self.become_follower(self.leader_id)
-
-        if msg['type'] == 'request_vote_rpc':
+        if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
             if msg['term'] > self.currentTerm:
-                self.voted_for = None
-                self.voted_for_me = []
-                self.receive_request_vote_rpc(msg)
-            # elif msg['term'] == self.currentTerm:
-            #     self.receive_request_vote_rpc(msg)
+                self.currentTerm = msg['term']
 
-        elif msg['type'] == 'append_entries_rpc':
-            self.receive_append_entries_rpc(msg)
-
+                if msg['type'] == 'append_entries_rpc':
+                    self.become_follower(msg['src'])
+                else:
+                    if not self.node_state == "F":
+                        self.become_follower("FFFF")
+                    else:
+                        self.become_follower(self.leader_id)
 
     def leader_receive_message(self, msg):
         """
@@ -102,11 +86,11 @@ class Server:
         @:return: Void
         """
 
-        # if msg['type'] == 'request_vote_rpc':
-        #     self.receive_request_vote_rpc(msg)
+        if msg['type'] == 'request_vote_rpc':
+            self.receive_request_vote_rpc(msg)
 
-        # if msg['type'] == 'append_entries_rpc':
-        #     self.receive_append_entries_rpc(msg)
+        if msg['type'] == 'append_entries_rpc':
+            self.receive_append_entries_rpc(msg)
 
         if msg['type'] in ['get', 'put']:
             self.send_redirect_to_client(msg)
@@ -206,14 +190,13 @@ class Server:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
                     if len(self.log) - 1 <= json_message['lastLogIndex']:
-                        self.currentTerm = json_message['term']
+                        # self.currentTerm = json_message['term']
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
                                 "leader": "FFFF",
                                 "type": "vote",
                                 "term": self.currentTerm}
                         self.voted_for = json_message['src']
-                        self.become_follower("FFFF")
                         self.send(vote)
                         self.get_new_election_timeout()
 
@@ -234,7 +217,6 @@ class Server:
         Initiate a new election - setting voted_for to None, and voted_for_me to []
         @:return: Void
         """
-        print str(self.id) + "NEW ELECTION"
         self.node_state = "C"
         self.currentTerm += 1
         self.voted_for = self.id
@@ -257,37 +239,26 @@ class Server:
         Create a new append_entries_rpc, returning the json
         :return: JSON
         """
-        # if DEBUG:
-        # print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
-        #     self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
+        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+            self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
-        if len(self.log): #and self.match_index[replica_id] > 0:
-            # prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
+        if len(self.log) and self.match_index[replica_id] > 0:
+
+
             prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
-        if self.match_index[replica_id] == 0:
-            entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
-        else:
-            entries = self.log[self.match_index[replica_id] + 1: self.match_index[replica_id] + 50]
-
-        #entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
-
-        if len(self.log) > 1 and self.log[self.match_index[replica_id]] > 1:
-            print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " with log entry " + str(self.log[self.match_index[replica_id]]) + ", " + str(self.log[self.match_index[replica_id] - 1]) + " for replica " + str(replica_id)
-        elif len(self.log):
-            print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " with log entry " + str(self.log[self.match_index[replica_id]])  + " for replica " + str(replica_id)
+        entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
 
         append_entries_rpc = {"src": self.id,
                             "dst": replica_id,
                             "leader": self.id,
                             "type": "append_entries_rpc",
                             "term": self.currentTerm,
-                            "prevLogIndex": max(0, self.match_index[replica_id]),
+                            "prevLogIndex": max(0, self.match_index[replica_id] - 1), # - 1,
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
-                            "leaderLastApplied": self.last_applied,
-                            "leaderLogLength": len(self.log)}
+                            "leaderLastApplied": self.last_applied}
         self.send(append_entries_rpc)
 
     def receive_append_entries_rpc(self, json_message):
@@ -296,48 +267,38 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm:  # and json_message['leaderLogLength'] >= len(self.log):
-            # if len(self.log):
-            # print str(self.id) + " follower received from " + str(json_message['src']) + " match_index of = " + str(max(0, json_message['prevLogIndex'])) + " with log entry " + str(self.log[json_message['prevLogIndex']])
-
-            self.currentTerm = json_message['term']
-            self.become_follower(json_message['src'])
+        if json_message['term'] >= self.currentTerm:
+            self.get_new_election_timeout()
+            self.leader_id = json_message['src']
 
             if DEBUG:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
                     json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
-            if not len(json_message['entries']):
-                print "EMPTY ENTRIES"
-                self.run_command_follower(json_message['leaderLastApplied'])
+            if not len(self.log):
+                self.log = json_message['entries']
+                #self.last_applied = json_message['leaderLastApplied']
+                if len(self.log):
+                    self.run_command_follower(json_message['leaderLastApplied'])
+                    self.send_append_entries_rpc_ack()
+
+            elif len(self.log) - 1 >= json_message['prevLogIndex']:
+
+                if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
+
+                    self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+
+                    #self.last_applied = json_message['leaderLastApplied']
+                    if len(json_message['entries']):
+                        self.run_command_follower(json_message['leaderLastApplied'])
+                        self.send_append_entries_rpc_ack()
+
+                elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+                    self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
 
             else:
-                if not len(self.log):
-                    
-                    self.log = json_message['entries']
-                    print str(self.id) + " len follower log " + str(len(self.log)) 
-                    if len(self.log):
-                        self.run_command_follower(json_message['leaderLastApplied'])
-                        self.send_append_entries_rpc_ack()
-
-                elif len(self.log) - 1 >= json_message['prevLogIndex']:
-                    
-                    if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
-                        print "Adding to log entries"
-                        self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
-
-                        print "len follower log" + str(len(self.log))
-                        self.run_command_follower(json_message['leaderLastApplied'])
-                        self.send_append_entries_rpc_ack()
-
-                    elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
-
-                        print "Decrement" + str(self.log[json_message['prevLogIndex']][1]) + " prevlogterm=" + str(json_message['prevLogTerm'])
-                        self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
-                        self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
-
-                else:
-                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+                self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
 
 
     def send_append_entries_rpc_ack(self):
@@ -353,8 +314,6 @@ class Server:
                               "match_index": len(self.log)} #(self.log)}
 
         self.send(append_entries_rpc)
-
-        print 'sent append entries rpc'
 
     def send_append_entries_rpc_ack_decrement(self, leader_prev_log_index):
         """
@@ -382,27 +341,27 @@ class Server:
         if json_msg['term'] == self.currentTerm:
             if DEBUG:
                 print json_msg
-            print "Leader Received Append_entries_rpc_ack with match index " + str(json_msg['match_index']) + " from replica " + str(json_msg['src']) + "\n"
             self.match_index[json_msg['src']] = json_msg['match_index']
-            if json_msg['match_index'] == 0:
-                self.initial_agreements += 1
             self.check_for_quorum()
 
     def check_for_quorum(self):
 
         agreement_size = 1
         for replica in self.match_index:
-            if self.match_index[replica] == len(self.log) - 1:
+            if self.match_index[replica] == len(self.log):
                 agreement_size += 1
 
-        print "AGREEMENT SIZE = " + str(agreement_size) + " InitialAgreements = " + str(self.initial_agreements)
-        if (agreement_size == self.quorum_size and len(self.log) > 1) or self.initial_agreements == self.quorum_size:
-            print "REACHED QUORUM"
+        if agreement_size == self.quorum_size:
             self.run_command_leader()
-            self.last_applied = len(self.log) - 1
+            self.last_applied = len(self.log)
             if len(self.client_queue):
                 self.pull_from_queue()
                 self.send_append_entries()
+
+
+
+
+
 
     def run_command_leader(self):
         """
@@ -438,18 +397,6 @@ class Server:
 
                 if DEBUG: print str(self.id) + ": SEND OK PUT"
                 self.send(message)
-        if DEBUG and len(self.log) == 500:
-            self.write_into_log_file()
-
-    def write_into_log_file(self):
-        filename = str(self.id) + "_log"
-        target = open(filename, 'w')
-
-        if len(self.log) == 500:
-            for entry in self.log:
-                target.write(str(entry))
-                target.write('\n')
-        target.close()
 
     def run_command_follower(self, leader_last_applied):
         """
@@ -457,23 +404,19 @@ class Server:
         @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
         @:return: Void
         """
-        if self.last_applied > min(len(self.log) - 1, leader_last_applied):
-            for index in range(self.last_applied, min(len(self.log) - 1, leader_last_applied)):
-                entry = self.log[index]
-                command = entry[0][0]
-                content = entry[0][1]
-                if command == 'put':
-                    key = content[0]
-                    value = content[1]
-                    self.put_into_store(key, value)
+        for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
+            #if len(self.log) - 1 >= index:
+            entry = self.log[index]
+            command = entry[0][0]
+            content = entry[0][1]
+            if command == 'put':
+                key = content[0]
+                value = content[1]
+                self.put_into_store(key, value)
 
-            if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
-
-            self.last_applied = max(self.last_applied, min(len(self.log) - 1, leader_last_applied))
-
-        if DEBUG and len(self.log) == 500:
-            self.write_into_log_file()
-
+        if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
+        # TODO: POSSIBLE POINT OF FAILURE
+        self.last_applied = min(len(self.log), leader_last_applied)
 
     def put_into_store(self, key, value):
         """
