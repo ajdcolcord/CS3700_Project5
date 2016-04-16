@@ -44,7 +44,8 @@ class Server:
                 self.currentTerm = msg['term']
 
                 if msg['type'] == 'append_entries_rpc':
-                    self.become_follower(msg['src'])
+                    if self.node_state == "L" and len(self.log) <= msg['logLength']:
+                            self.become_follower(msg['src'])
                 else:
                     if not self.node_state == "F":
                         self.become_follower("FFFF")
@@ -258,7 +259,8 @@ class Server:
                             "prevLogIndex": max(0, self.match_index[replica_id] - 1), # - 1,
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
-                            "leaderLastApplied": self.last_applied}
+                            "leaderLastApplied": self.last_applied,
+                            "logLength": len(self.log)}
         self.send(append_entries_rpc)
 
     def receive_append_entries_rpc(self, json_message):
