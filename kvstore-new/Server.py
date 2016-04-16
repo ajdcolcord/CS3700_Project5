@@ -260,7 +260,7 @@ class Server:
         prevLogTerm = 0
         if len(self.log): #and self.match_index[replica_id] > 0:
             # prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
-            prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
+            prevLogTerm = self.log[self.match_index[replica_id]][1]
 
         entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
         if len(self.log) > 1 and self.log[self.match_index[replica_id]] > 1:
@@ -340,7 +340,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": len(self.log)} #(self.log)}
+                              "match_index": len(self.log) - 1} #(self.log)}
 
         self.send(append_entries_rpc)
 
@@ -358,7 +358,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": len(self.log)}
+                              "match_index": len(self.log) - 1}
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
