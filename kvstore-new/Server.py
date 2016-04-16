@@ -48,7 +48,7 @@ class Server:
                             print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
                             self.become_follower(msg['src'], msg['term'])
                 else:
-                    if len(self.log) <= msg['lastLogIndex'] + 1:
+                    if len(self.log) < msg['lastLogIndex'] + 1:
                         if not self.node_state == "F":
                             print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
                                 "FFFF") + " because of a vote who's log size is larger than mine!"
