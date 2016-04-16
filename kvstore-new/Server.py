@@ -263,7 +263,11 @@ class Server:
             prevLogTerm = self.log[self.match_index[replica_id]][1]
 
         entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
-        print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " for replica " + str(replica_id)
+        if len(self.log) > 1 and self.log[self.match_index[replica_id]] > 1:
+            print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " with log entry " + str(self.log[self.match_index[replica_id]]) + ", " + str(self.log[self.match_index[replica_id] - 1]) + " for replica " + str(replica_id)
+        else:
+            print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " with log entry " + str(self.log[self.match_index[replica_id]])  + " for replica " + str(replica_id)
+
         append_entries_rpc = {"src": self.id,
                             "dst": replica_id,
                             "leader": self.id,
@@ -282,7 +286,10 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm and json_message['leaderLogLength'] >= len(self.log):
+        if json_message['term'] >= self.currentTerm:  # and json_message['leaderLogLength'] >= len(self.log):
+            if len(self.log):
+                print str(self.id) + " follower received from " + str(json_message['src']) + " match_index of = " + str(max(0, json_message['prevLogIndex'])) + " with log entry " + str(self.log[json_message['prevLogIndex']])
+
             self.currentTerm = json_message['term']
             self.become_follower(json_message['src'])
 
@@ -307,7 +314,6 @@ class Server:
                     
                     if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                         print "Adding to log entries"
-                        # self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
                         self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
 
 
