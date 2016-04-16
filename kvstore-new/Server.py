@@ -34,6 +34,7 @@ class Server:
         self.match_index = {}
         self.reinitialize_match_index()
         self.log = []
+        self.add_entry('startup', 0, "FFFF", 12345)
 
         self.key_value_store = {}
 
