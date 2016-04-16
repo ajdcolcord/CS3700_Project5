@@ -41,16 +41,16 @@ class Server:
     def all_receive_message(self, msg):
         if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
             if msg['term'] > self.currentTerm:
-                self.currentTerm = msg['term']
+                # self.currentTerm = msg['term']
 
                 if msg['type'] == 'append_entries_rpc':
                     if self.node_state == "L" and len(self.log) <= msg['logLength']:
-                            self.become_follower(msg['src'])
-                # else:
-                #     if not self.node_state == "F":
-                #         self.become_follower("FFFF")
-                #     else:
-                #         self.become_follower(self.leader_id)
+                            self.become_follower(msg['src'], msg['term'])
+                else:
+                    if not self.node_state == "F":
+                        self.become_follower("FFFF", msg['term'])
+                    else:
+                        self.become_follower(self.leader_id, msg['term'])
 
     def leader_receive_message(self, msg):
         """
@@ -453,13 +453,14 @@ class Server:
         self.pull_from_queue()
         self.send_append_entries()
 
-    def become_follower(self, leader_id):
+    def become_follower(self, leader_id, new_term):
         """
         Execute the actions to become a follower (resetting node_state, election timeout, votedforme, votedfor), and
         set this leader_id to the input leader_id
         @:param leader_id - Int - the ID of the new leader
         @:return Void
         """
+        self.currentTerm = new_term
         self.node_state = "F"
         self.get_new_election_timeout()
         self.voted_for_me = []
