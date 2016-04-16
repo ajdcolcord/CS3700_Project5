@@ -383,7 +383,9 @@ class Server:
             if self.match_index[replica] == len(self.log) - 1:
                 agreement_size += 1
 
+        print "AGREEMENT SIZE = " + str(agreement_size)
         if agreement_size == self.quorum_size:
+            print "REACHED QUORUM"
             self.run_command_leader()
             self.last_applied = len(self.log) - 1
             if len(self.client_queue):
