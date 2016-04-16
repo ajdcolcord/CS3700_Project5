@@ -39,17 +39,29 @@ class Server:
 
 
     def all_receive_message(self, msg):
-        if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
-            if msg['term'] > self.currentTerm:
-                self.currentTerm = msg['term']
+        # if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
+        #     if msg['term'] > self.currentTerm:
+        #         self.currentTerm = msg['term']
+        #
+        #         if msg['type'] == 'append_entries_rpc':
+        #             self.become_follower(msg['src'])
+        #         else:
+        #             if not self.node_state == "F":
+        #                 self.become_follower("FFFF")
+        #             else:
+        #                 self.become_follower(self.leader_id)
 
-                if msg['type'] == 'append_entries_rpc':
-                    self.become_follower(msg['src'])
-                else:
-                    if not self.node_state == "F":
-                        self.become_follower("FFFF")
-                    else:
-                        self.become_follower(self.leader_id)
+        if msg['type'] == 'request_vote_rpc':
+            if msg['term'] > self.currentTerm:
+                self.voted_for = None
+                self.voted_for_me = []
+                self.receive_request_vote_rpc(msg)
+            # elif msg['term'] == self.currentTerm:
+            #     self.receive_request_vote_rpc(msg)
+
+        elif msg['type'] == 'append_entries_rpc':
+            self.receive_append_entries_rpc(msg)
+
 
     def leader_receive_message(self, msg):
         """
@@ -190,13 +202,14 @@ class Server:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
                     if len(self.log) - 1 <= json_message['lastLogIndex']:
-                        # self.currentTerm = json_message['term']
+                        self.currentTerm = json_message['term']
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
                                 "leader": "FFFF",
                                 "type": "vote",
                                 "term": self.currentTerm}
                         self.voted_for = json_message['src']
+                        self.become_follower("FFFF")
                         self.send(vote)
                         self.get_new_election_timeout()
 
@@ -217,6 +230,7 @@ class Server:
         Initiate a new election - setting voted_for to None, and voted_for_me to []
         @:return: Void
         """
+        print str(self.id) + "NEW ELECTION"
         self.node_state = "C"
         self.currentTerm += 1
         self.voted_for = self.id
@@ -245,21 +259,20 @@ class Server:
 
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
-
-
             prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
         entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
-
+        print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id] - 1)) + " for replica " + str(replica_id)
         append_entries_rpc = {"src": self.id,
                             "dst": replica_id,
                             "leader": self.id,
                             "type": "append_entries_rpc",
                             "term": self.currentTerm,
-                            "prevLogIndex": max(0, self.match_index[replica_id] - 1), # - 1,
+                            "prevLogIndex": max(0, self.match_index[replica_id] - 1),
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
-                            "leaderLastApplied": self.last_applied}
+                            "leaderLastApplied": self.last_applied,
+                            "leaderLogLength": len(self.log)}
         self.send(append_entries_rpc)
 
     def receive_append_entries_rpc(self, json_message):
@@ -268,10 +281,9 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm:
-            self.get_new_election_timeout()
-            self.leader_id = json_message['src']
-
+        if json_message['term'] >= self.currentTerm and json_message['leaderLogLength'] > len(self.log):
+            self.currentTerm = json_message['term']
+            self.become_follower(json_message['src'])
 
             if DEBUG:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
