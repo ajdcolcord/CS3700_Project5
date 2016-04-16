@@ -46,8 +46,8 @@ while True:
         if SERVER.node_state == "L":
             SERVER.leader_receive_message(msg)
 
-        if SERVER.node_state == "C":
+        elif SERVER.node_state == "C":
             SERVER.candidate_receive_message(msg)
 
-        if SERVER.node_state == "F":
+        elif SERVER.node_state == "F":
             SERVER.follower_receive_message(msg)
