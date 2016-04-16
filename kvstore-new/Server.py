@@ -380,12 +380,12 @@ class Server:
 
         agreement_size = 1
         for replica in self.match_index:
-            if self.match_index[replica] == len(self.log):
+            if self.match_index[replica] == len(self.log) - 1:
                 agreement_size += 1
 
         if agreement_size == self.quorum_size:
             self.run_command_leader()
-            self.last_applied = len(self.log)
+            self.last_applied = len(self.log) - 1
             if len(self.client_queue):
                 self.pull_from_queue()
                 self.send_append_entries()
@@ -443,8 +443,8 @@ class Server:
         @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
         @:return: Void
         """
-        if self.last_applied > min(len(self.log), leader_last_applied):
-            for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
+        if self.last_applied > min(len(self.log) - 1, leader_last_applied):
+            for index in range(self.last_applied, min(len(self.log) - 1, leader_last_applied)):
                 entry = self.log[index]
                 command = entry[0][0]
                 content = entry[0][1]
@@ -455,7 +455,7 @@ class Server:
 
             if DEBUG: print str(self.id) + " Follower Log Size " + str(len(self.log))
 
-            self.last_applied = max(self.last_applied, min(len(self.log), leader_last_applied))
+            self.last_applied = max(self.last_applied, min(len(self.log) - 1, leader_last_applied))
 
         if DEBUG and len(self.log) == 500:
             self.write_into_log_file()
