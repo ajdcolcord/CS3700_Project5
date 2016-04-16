@@ -265,7 +265,7 @@ class Server:
         entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
         if len(self.log) > 1 and self.log[self.match_index[replica_id]] > 1:
             print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " with log entry " + str(self.log[self.match_index[replica_id]]) + ", " + str(self.log[self.match_index[replica_id] - 1]) + " for replica " + str(replica_id)
-        else:
+        elif len(self.log):
             print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " with log entry " + str(self.log[self.match_index[replica_id]])  + " for replica " + str(replica_id)
 
         append_entries_rpc = {"src": self.id,
