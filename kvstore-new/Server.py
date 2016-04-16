@@ -1,6 +1,6 @@
 import sys, socket, select, time, json, random, datetime
 
-DEBUG = False
+DEBUG = True
 
 class Server:
     """
