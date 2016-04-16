@@ -281,7 +281,7 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm and json_message['leaderLogLength'] > len(self.log):
+        if json_message['term'] >= self.currentTerm and json_message['leaderLogLength'] >= len(self.log):
             self.currentTerm = json_message['term']
             self.become_follower(json_message['src'])
 
