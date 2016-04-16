@@ -370,6 +370,7 @@ class Server:
         if json_msg['term'] == self.currentTerm:
             if DEBUG:
                 print json_msg
+            print "Leader Received Append_entries_rpc_ack with match index " + json_msg['match_index'] + " from replica " + json_msg['src'] + "\n"
             self.match_index[json_msg['src']] = json_msg['match_index']
             self.check_for_quorum()
 
