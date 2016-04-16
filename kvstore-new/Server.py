@@ -1,6 +1,6 @@
 import sys, socket, select, time, json, random, datetime
 
-DEBUG = True
+DEBUG = False
 
 class Server:
     """
@@ -239,8 +239,8 @@ class Server:
         Create a new append_entries_rpc, returning the json
         :return: JSON
         """
-        if DEBUG:
-            print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+        # if DEBUG:
+        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
             self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
@@ -283,7 +283,7 @@ class Server:
             else:
                 if not len(self.log):
                     self.log = json_message['entries']
-                    #self.last_applied = json_message['leaderLastApplied']
+
                     if len(self.log):
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
@@ -293,10 +293,8 @@ class Server:
                     if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                         self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
 
-                        #self.last_applied = json_message['leaderLastApplied']
-                        if len(json_message['entries']):
-                            self.run_command_follower(json_message['leaderLastApplied'])
-                            self.send_append_entries_rpc_ack()
+                        self.run_command_follower(json_message['leaderLastApplied'])
+                        self.send_append_entries_rpc_ack()
 
                     elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
                         self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
