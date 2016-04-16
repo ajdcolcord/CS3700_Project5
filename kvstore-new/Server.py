@@ -290,25 +290,29 @@ class Server:
                     json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
             if not len(json_message['entries']):
+                print "EMPTY ENTRIES"
                 self.run_command_follower(json_message['leaderLastApplied'])
 
             else:
                 if not len(self.log):
+                    
                     self.log = json_message['entries']
-
+                    print str(self.id) + " len follower log " + str(len(self.log)) 
                     if len(self.log):
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
                 elif len(self.log) - 1 >= json_message['prevLogIndex']:
-
+                    
                     if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
+                        print "Adding to log entries"
                         self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
 
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
 
                     elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+                        print "Decrement" + str(self.log[json_message['prevLogIndex']][1]) + " prevlogterm=" + str(json_message['prevLogTerm']) 
                         self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                         self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
 
