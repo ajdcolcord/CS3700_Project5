@@ -258,8 +258,9 @@ class Server:
             self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
-        if len(self.log) and self.match_index[replica_id] > 0:
-            prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
+        if len(self.log): #and self.match_index[replica_id] > 0:
+            # prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
+            prevLogTerm = self.log[self.match_index[replica_id]][1]
 
         entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
         print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id] - 1)) + " for replica " + str(replica_id)
@@ -309,6 +310,7 @@ class Server:
                         self.send_append_entries_rpc_ack()
 
                     elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
+
                         self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
                         self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
 
