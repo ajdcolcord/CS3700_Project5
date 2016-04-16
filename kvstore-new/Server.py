@@ -308,7 +308,7 @@ class Server:
                     if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                         print "Adding to log entries"
                         # self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
-                        self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+                        self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
 
 
                         self.run_command_follower(json_message['leaderLastApplied'])
