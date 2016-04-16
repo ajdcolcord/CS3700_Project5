@@ -263,13 +263,13 @@ class Server:
             prevLogTerm = self.log[self.match_index[replica_id]][1]
 
         entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
-        print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id] - 1)) + " for replica " + str(replica_id)
+        print str(self.id) + " leader sending match_index of = " + str(max(0, self.match_index[replica_id])) + " for replica " + str(replica_id)
         append_entries_rpc = {"src": self.id,
                             "dst": replica_id,
                             "leader": self.id,
                             "type": "append_entries_rpc",
                             "term": self.currentTerm,
-                            "prevLogIndex": max(0, self.match_index[replica_id] - 1),
+                            "prevLogIndex": max(0, self.match_index[replica_id]),
                             "prevLogTerm": prevLogTerm,
                             "entries": entries,
                             "leaderLastApplied": self.last_applied,
@@ -307,7 +307,9 @@ class Server:
                     
                     if self.log[json_message['prevLogIndex']][1] == json_message['prevLogTerm']:
                         print "Adding to log entries"
-                        self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+                        # self.log = self.log[:json_message['prevLogIndex'] + 1] + json_message['entries']
+                        self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
+
 
                         self.run_command_follower(json_message['leaderLastApplied'])
                         self.send_append_entries_rpc_ack()
