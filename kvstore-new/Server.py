@@ -36,8 +36,12 @@ class Server:
         self.log = []
         self.add_entry('startup', 0, "FFFF", 12345)
 
+
+
         self.key_value_store = {}
 
+
+        self.initial_agreements = 0
 
     def all_receive_message(self, msg):
         # if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
@@ -375,6 +379,8 @@ class Server:
                 print json_msg
             print "Leader Received Append_entries_rpc_ack with match index " + str(json_msg['match_index']) + " from replica " + str(json_msg['src']) + "\n"
             self.match_index[json_msg['src']] = json_msg['match_index']
+            if json_msg['match_index'] == 0:
+                self.initial_agreements += 1
             self.check_for_quorum()
 
     def check_for_quorum(self):
@@ -385,7 +391,7 @@ class Server:
                 agreement_size += 1
 
         print "AGREEMENT SIZE = " + str(agreement_size)
-        if agreement_size == self.quorum_size:
+        if agreement_size == self.quorum_size and self.initial_agreements == self.quorum_size:
             print "REACHED QUORUM"
             self.run_command_leader()
             self.last_applied = len(self.log) - 1
