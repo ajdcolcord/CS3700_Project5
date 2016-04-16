@@ -69,8 +69,8 @@ class Server:
         @:param msg - the JSON message received
         @:return: Void
         """
-        # if msg['type'] == 'append_entries_rpc_ack':
-        #     self.receive_append_entries_rpc_ack(msg)
+        if msg['type'] == 'append_entries_rpc_ack':
+            self.receive_append_entries_rpc_ack(msg)
 
         if msg['type'] in ['get', 'put']:
             self.add_to_client_queue(msg)
@@ -344,6 +344,8 @@ class Server:
 
         self.send(append_entries_rpc)
 
+        print 'sent append entries rpc'
+
     def send_append_entries_rpc_ack_decrement(self, leader_prev_log_index):
         """
         FOLLOWER
@@ -441,7 +443,7 @@ class Server:
         @:param leader_last_applied - leader's last applied index, to apply each entry up to that in this log
         @:return: Void
         """
-        if self.last_applied >= min(len(self.log), leader_last_applied):
+        if self.last_applied > min(len(self.log), leader_last_applied):
             for index in range(self.last_applied, min(len(self.log), leader_last_applied)):
                 entry = self.log[index]
                 command = entry[0][0]
