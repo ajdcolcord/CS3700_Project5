@@ -16,6 +16,7 @@ SERVER.get_new_election_timeout()
 DEBUG = False
 
 while True:
+    previous_state = SERVER.node_state
 
     if SERVER.node_state in ["F", "C"]:
         if SERVER.election_timedout():
@@ -51,3 +52,6 @@ while True:
 
         if SERVER.node_state == "F":
             SERVER.follower_receive_message(msg)
+
+    if previous_state == "L" and SERVER.node_state != "L":
+        print str(SERVER.id) + " LEADER STEPPED DOWN TO FOLLOW " + str(SERVER.leader_id) + " NOW A " + str(SERVER.node_state)
