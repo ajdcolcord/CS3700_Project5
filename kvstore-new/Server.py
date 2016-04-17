@@ -48,9 +48,8 @@ class Server:
                         print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
                         self.become_follower(msg['src'], msg['term'])
                 else:
-                    # TODO: SEEMS TO BE THE TROUBLE SPOT HERE.....
                     if self.node_state == "C":
-                        print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
+                        print str(self.id) + " I am a Cand or, becoming a follower of " + str(
                             "FFFF") + " because of a vote who's log size is larger than mine!"
 
                         self.become_follower("FFFF", msg['term'])
@@ -249,8 +248,8 @@ class Server:
         Create a new append_entries_rpc, returning the json
         :return: JSON
         """
-        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
-            self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
+        #print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+         #   self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
