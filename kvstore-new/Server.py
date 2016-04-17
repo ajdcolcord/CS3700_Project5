@@ -294,7 +294,7 @@ class Server:
         if json_message['term'] >= self.currentTerm and json_message['src'] == self.leader_id:
             self.get_new_election_timeout()
             # self.leader_id = json_message['src']
-            print str(self.id) + 'VALID APPEND ENTRY: ' + str(json_message)
+            print str(self.id) + 'VALID APPEND ENTRY: from' + str(json_message['src'])
 
             if DEBUG:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
@@ -324,7 +324,8 @@ class Server:
 
             else:
                 self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
-
+        else:
+            print str(self.id) + 'IN-VALID APPEND ENTRY: from' + str(json_message['src']) + ' C_T=' + str(self.currentTerm) + " that_term=" + str(json_message['term'])
 
     def send_append_entries_rpc_ack(self):
         """
