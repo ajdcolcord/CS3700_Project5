@@ -454,7 +454,7 @@ class Server:
         Execute the actions needed to change to a leader status, resetting timeouts, leader ID, etc.
         @:return: Void
         """
-        if DEBUG: print str(self.id) + ": BECAME LEADER"
+        print str(self.id) + ": BECAME LEADER"
         self.reinitialize_match_index()
         self.get_new_election_timeout()
         self.node_state = "L"
