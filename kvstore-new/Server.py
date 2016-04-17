@@ -44,24 +44,6 @@ class Server:
                 # self.currentTerm = msg['term']
 
                 if msg['type'] == 'append_entries_rpc':
-                    if self.node_state == "L" and len(self.log) <= msg['logLength']:
-                        print str(self.id) + " I am a Leader, becoming a follower of " + str(
-                            msg['src']) + " who's log size is larger than mine!"
-                        self.become_follower(msg['src'], msg['term'])
-                else:
-
-                    if not self.node_state == "F":
-                        print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
-                            "FFFF") + " because of a vote who's log size is larger than mine!"
-
-                        self.become_follower("FFFF", msg['term'])
-                    elif self.node_state == "F":
-                        print str(self.id) + " I am a Follower, Becoming *le Follower"
-                        # self.become_follower(self.leader_id, msg['term'])
-                        self.become_follower(msg['src'], msg['term'])
-
-                '''
-                if msg['type'] == 'append_entries_rpc':
                     if self.node_state == "L":
                         if len(self.log) <= msg['logLength']:
                             print str(self.id) + " I am a Leader (log smaller/equal), becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
@@ -87,7 +69,7 @@ class Server:
 
                 #             print str(self.id) + " I am a Follower, Becoming *le Follower"
                 #             self.become_follower("FFFF", msg['term'])
-                '''
+
 
     def leader_receive_message(self, msg):
         """
@@ -317,7 +299,7 @@ class Server:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
                     json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
-            if not len(self.log):
+            if not len(self.log) or json_message['prevLogIndex'] == 0:
                 self.log = json_message['entries']
                 #self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
