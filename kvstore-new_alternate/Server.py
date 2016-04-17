@@ -44,32 +44,20 @@ class Server:
                 # self.currentTerm = msg['term']
 
                 if msg['type'] == 'append_entries_rpc':
-                    if self.node_state == "L":
-                        if len(self.log) <= msg['logLength']:
-                            print str(self.id) + " I am a Leader (log smaller/equal), becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
-                            self.become_follower(msg['src'], msg['term'])
-                        else:
-                            print str(self.id) + " I am a Leader (log bigger), becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
-
-                            self.become_follower(msg['src'], msg['term'])
-                            self.send_redirects_from_log(msg['logLength'] - 1, len(self.log) - 1)
-
-                else:
-                    if len(self.log) <= msg['lastLogIndex'] + 1:
+                    if self.node_state == "L" and len(self.log) <= msg['logLength']:
+                        print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
                         self.become_follower(msg['src'], msg['term'])
-                        # if self.node_state == "C":
-                        #
-                        #     print str(self.id) + " I am a Cand, becoming a follower of " + str(
-                        #         "FFFF") + "!"
-                        #
-                        #     self.become_follower("FFFF", msg['term'])
-                        # elif self.node_state == "F":
-                        #     self.voted_for = None
-                        #     self.voted_for_me = []
+                else:
 
-                #             print str(self.id) + " I am a Follower, Becoming *le Follower"
-                #             self.become_follower("FFFF", msg['term'])
+                    if not self.node_state == "F":
+                        print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
+                            "FFFF") + " because of a vote who's log size is larger than mine!"
 
+                        self.become_follower("FFFF", msg['term'])
+                    elif self.node_state == "F":
+                        print str(self.id) + " I am a Follower, Becoming *le Follower"
+                        #self.become_follower(self.leader_id, msg['term'])
+                        self.become_follower(msg['src'], msg['term'])
 
     def leader_receive_message(self, msg):
         """
@@ -210,9 +198,6 @@ class Server:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
                     if len(self.log) - 1 <= json_message['lastLogIndex']:
-
-                        self.leader_id = json_message['src'] # TODO: NEW
-
                         # self.currentTerm = json_message['term']
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
@@ -262,8 +247,8 @@ class Server:
         Create a new append_entries_rpc, returning the json
         :return: JSON
         """
-        #print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
-         #   self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
+        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+            self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
@@ -291,16 +276,15 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm and json_message['src'] == self.leader_id:
+        if json_message['term'] >= self.currentTerm:
             self.get_new_election_timeout()
-            # self.leader_id = json_message['src']
-            print str(self.id) + 'VALID APPEND ENTRY: from' + str(json_message['src'])
+            self.leader_id = json_message['src']
 
             if DEBUG:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
                     json_message['prevLogIndex']) + " Len Entries from Leader=" + str(len(json_message['entries']))
 
-            if not len(self.log) or json_message['prevLogIndex'] == 0:
+            if not len(self.log):
                 self.log = json_message['entries']
                 #self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
@@ -324,8 +308,7 @@ class Server:
 
             else:
                 self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
-        else:
-            print str(self.id) + 'IN-VALID APPEND ENTRY: from' + str(json_message['src']) + ' C_T=' + str(self.currentTerm) + " that_term=" + str(json_message['term'])
+
 
     def send_append_entries_rpc_ack(self):
         """
@@ -353,7 +336,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": max(0, leader_prev_log_index - 50)}
+                              "match_index": len(self.log)}
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
@@ -468,7 +451,7 @@ class Server:
         Execute the actions needed to change to a leader status, resetting timeouts, leader ID, etc.
         @:return: Void
         """
-        print str(self.id) + ": BECAME LEADER"
+        if DEBUG: print str(self.id) + ": BECAME LEADER"
         self.reinitialize_match_index()
         self.get_new_election_timeout()
         self.node_state = "L"
@@ -496,23 +479,6 @@ class Server:
         for message in self.client_queue:
             self.send_redirect_to_client(message)
         self.client_queue = []
-
-    def send_redirects_from_log(self, start_index, end_index):
-        for entry_index in range(start_index, end_index):
-            entry = self.log[entry_index]
-            client_addr = entry[2]
-            mess_id = entry[3]
-
-            redirect_message = {"src": self.id,
-                                "dst": client_addr,
-                                "leader": self.leader_id,
-                                "type": "redirect",
-                                "MID": mess_id}
-
-            self.send(redirect_message)
-
-
-
 
     def get_new_election_timeout(self):
         """
