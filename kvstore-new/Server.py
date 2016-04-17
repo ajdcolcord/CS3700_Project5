@@ -60,8 +60,8 @@ class Server:
 
                             print str(self.id) + " I am a Cand, becoming a follower of " + str(
                                 "FFFF") + "!"
-                #
-                #             self.become_follower("FFFF", msg['term'])
+
+                            self.become_follower("FFFF", msg['term'])
                 #         elif self.node_state == "F":
                 #             print str(self.id) + " I am a Follower, Becoming *le Follower"
                 #             self.become_follower("FFFF", msg['term'])
