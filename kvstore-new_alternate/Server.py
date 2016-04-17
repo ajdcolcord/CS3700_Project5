@@ -171,7 +171,8 @@ class Server:
 
     def reinitialize_match_index(self):
         for replica in self.replica_ids:
-            self.match_index[replica] = 0
+            # self.match_index[replica] = 0
+            self.match_index[replica] = self.last_applied
 
     def get_lastLogTerm(self):
         lastLogTerm = 0
@@ -340,7 +341,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": self.last_applied}
+                              "match_index": len(self.log)} #self.last_applied}
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
