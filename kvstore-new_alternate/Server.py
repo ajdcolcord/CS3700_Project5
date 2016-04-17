@@ -225,12 +225,14 @@ class Server:
         Initiate a new election - setting voted_for to None, and voted_for_me to []
         @:return: Void
         """
+
         self.node_state = "C"
         self.currentTerm += 1
         self.voted_for = self.id
         self.voted_for_me = [self.voted_for]
         self.get_new_election_timeout()
         self.send_request_vote_rpc()
+        print str(self.id) + ": INITIATING ELECTION on new term: " + str(self.currentTerm)
 
     def send_append_entries(self):
         """
