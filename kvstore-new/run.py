@@ -139,16 +139,24 @@ class Client:
         self.sim = simulator
         self.cid = cid
         self.leader = 'FFFF'
-    
+
+    def forget(self):
+        self.leader = 'FFFF'
+        
     def __get_rand_str__(self, size=16, chars=string.ascii_uppercase + string.digits):
         return ''.join(random.choice(chars) for _ in range(size))
+
+    def __get_destination__(self):
+        if self.leader == 'FFFF' or self.leader not in self.sim.living_rids:
+            self.leader = 'FFFF'
+            return random.choice(list(self.sim.living_rids))
+        return self.leader
     
     def __create_get__(self, key):
         self.sim.stats.total_get += 1
         mid = self.__get_rand_str__()
         self.reqs[mid] = self.Request(True, key)
-        dst = self.leader
-        if dst == 'FFFF': dst = random.choice(self.sim.replicas.keys())
+        dst = self.__get_destination__()
         return {'src': self.cid, 'dst': dst, 'leader': self.leader,
                 'type': 'get', 'MID': mid, 'key': key}
         
@@ -156,8 +164,7 @@ class Client:
         self.sim.stats.total_put += 1
         mid = self.__get_rand_str__()
         self.reqs[mid] = self.Request(False, key, value)
-        dst = self.leader
-        if dst == 'FFFF': dst = random.choice(self.sim.replicas.keys())
+        dst = self.__get_destination__()
         return {'src': self.cid, 'dst': dst, 'leader': self.leader,
                 'type': 'put', 'MID': mid, 'key': key, 'value': value}
 
@@ -375,6 +382,7 @@ class Simulation:
         if self.leader != 'FFFF':
             self.__kill_replica__(self.replicas[self.leader])
             self.leader = 'FFFF'
+            for client in self.clients.itervalues(): client.forget()
                         
     def __kill_non_leader__(self):
         if len(self.living_rids) > 1:
@@ -393,6 +401,7 @@ class Simulation:
             qsize -= 1
         else:
             self.leader = 'FFFF'
+            for client in self.clients.itervalues(): client.forget()
                         
         for i in range(qsize):
             rid = random.choice(r)
