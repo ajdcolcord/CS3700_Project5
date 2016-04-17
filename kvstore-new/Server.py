@@ -48,14 +48,16 @@ class Server:
                         print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
                         self.become_follower(msg['src'], msg['term'])
                 else:
-                    if self.node_state == "C":
-                        print str(self.id) + " I am a Cand, becoming a follower of " + str(
-                            "FFFF") + " because of a vote who's log size is larger than mine!"
+                    if len(self.log) <= msg['lastLogIndex'] + 1:
+                        if self.node_state == "C":
 
-                        self.become_follower("FFFF", msg['term'])
-                    elif self.node_state == "F":
-                        print str(self.id) + " I am a Follower, Becoming *le Follower"
-                        self.become_follower("FFFF", msg['term'])
+                            print str(self.id) + " I am a Cand, becoming a follower of " + str(
+                                "FFFF") + "!"
+
+                            self.become_follower("FFFF", msg['term'])
+                        elif self.node_state == "F":
+                            print str(self.id) + " I am a Follower, Becoming *le Follower"
+                            self.become_follower("FFFF", msg['term'])
 
     def leader_receive_message(self, msg):
         """
