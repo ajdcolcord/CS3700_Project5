@@ -183,7 +183,7 @@ class Server:
 
     def reinitialize_match_index(self):
         for replica in self.replica_ids:
-            self.match_index[replica] = 0
+            self.match_index[replica] = self.last_applied
 
     def get_lastLogTerm(self):
         lastLogTerm = 0
