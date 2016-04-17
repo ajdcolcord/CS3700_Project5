@@ -49,12 +49,12 @@ class Server:
                         self.become_follower(msg['src'], msg['term'])
                 else:
                     # TODO: SEEMS TO BE THE TROUBLE SPOT HERE.....
-                    if not self.node_state == "F":
+                    if self.node_state == "C":
                         print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
                             "FFFF") + " because of a vote who's log size is larger than mine!"
 
                         self.become_follower("FFFF", msg['term'])
-                    elif self.node_state == "C":
+                    elif self.node_state == "F":
                         print str(self.id) + " I am a Follower, Becoming *le Follower"
                         self.become_follower("FFFF", msg['term'])
 
