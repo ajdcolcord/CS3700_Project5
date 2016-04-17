@@ -350,7 +350,7 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": len(self.log)}
+                              "match_index": 0} #len(self.log)}
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
