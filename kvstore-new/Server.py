@@ -45,9 +45,10 @@ class Server:
 
                 if msg['type'] == 'append_entries_rpc':
                     if self.node_state == "L" and len(self.log) <= msg['logLength']:
-                            print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
-                            self.become_follower(msg['src'], msg['term'])
+                        print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
+                        self.become_follower(msg['src'], msg['term'])
                 else:
+
                     if not self.node_state == "F":
                         print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
                             "FFFF") + " because of a vote who's log size is larger than mine!"
@@ -55,7 +56,8 @@ class Server:
                         self.become_follower("FFFF", msg['term'])
                     elif self.node_state == "F":
                         print str(self.id) + " I am a Follower, Becoming *le Follower"
-                        self.become_follower(self.leader_id, msg['term'])
+                        #self.become_follower(self.leader_id, msg['term'])
+                        self.become_follower(msg['src'], msg['term'])
 
     def leader_receive_message(self, msg):
         """
