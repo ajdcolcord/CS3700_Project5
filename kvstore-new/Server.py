@@ -294,7 +294,7 @@ class Server:
         if json_message['term'] >= self.currentTerm and json_message['src'] == self.leader_id:
             self.get_new_election_timeout()
             # self.leader_id = json_message['src']
-            print str(self.id) + 'VALID APPEND ENTRY: ' + json_message
+            print str(self.id) + 'VALID APPEND ENTRY: ' + str(json_message)
 
             if DEBUG:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
