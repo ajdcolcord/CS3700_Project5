@@ -310,7 +310,9 @@ class Server:
 
             else:
                 self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
-
+        else:
+            print str(self.id) + 'IN-VALID APPEND ENTRY: from' + str(json_message['src']) + ' C_T=' + str(
+                self.currentTerm) + " that_term=" + str(json_message['term'])
 
     def send_append_entries_rpc_ack(self):
         """
