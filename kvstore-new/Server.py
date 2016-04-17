@@ -44,9 +44,16 @@ class Server:
                 # self.currentTerm = msg['term']
 
                 if msg['type'] == 'append_entries_rpc':
-                    if self.node_state == "L" and len(self.log) < msg['logLength']:
-                        print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
-                        self.become_follower(msg['src'], msg['term'])
+                    if self.node_state == "L":
+                        if len(self.log) <= msg['logLength']:
+                            print str(self.id) + " I am a Leader (log smaller/equal), becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
+                            self.become_follower(msg['src'], msg['term'])
+                        else:
+                            print str(self.id) + " I am a Leader (log bigger), becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
+
+                            self.become_follower(msg['src'], msg['term'])
+                            self.send_redirects_from_log(msg['logLength'] - 1, len(self.log) - 1)
+                    
                 else:
                     if len(self.log) <= msg['lastLogIndex'] + 1:
                         if self.node_state == "C":
@@ -482,6 +489,23 @@ class Server:
         for message in self.client_queue:
             self.send_redirect_to_client(message)
         self.client_queue = []
+
+    def send_redirects_from_log(self, start_index, end_index):
+        for entry_index in range(start_index, end_index):
+            entry = self.log[entry_index]
+            client_addr = entry[2]
+            mess_id = entry[3]
+
+            redirect_message = {"src": self.id,
+                                "dst": client_addr,
+                                "leader": self.leader_id,
+                                "type": "redirect",
+                                "MID": mess_id}
+
+            self.send(redirect_message)
+
+
+
 
     def get_new_election_timeout(self):
         """
