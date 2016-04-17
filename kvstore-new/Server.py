@@ -45,17 +45,17 @@ class Server:
 
                 if msg['type'] == 'append_entries_rpc':
                     if self.node_state == "L" and len(self.log) <= msg['logLength']:
-                        print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
+                        #print str(self.id) + " I am a Leader, becoming a follower of " + str(msg['src']) + " who's log size is larger than mine!"
                         self.become_follower(msg['src'], msg['term'])
                 else:
 
                     if not self.node_state == "F":
-                        print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
-                            "FFFF") + " because of a vote who's log size is larger than mine!"
+                        #print str(self.id) + " I am a Cand or Leader, becoming a follower of " + str(
+                        #    "FFFF") + " because of a vote who's log size is larger than mine!"
 
                         self.become_follower("FFFF", msg['term'])
                     elif self.node_state == "F":
-                        print str(self.id) + " I am a Follower, Becoming *le Follower"
+                        #print str(self.id) + " I am a Follower, Becoming *le Follower"
                         #self.become_follower(self.leader_id, msg['term'])
                         self.become_follower(msg['src'], msg['term'])
 
@@ -247,8 +247,8 @@ class Server:
         Create a new append_entries_rpc, returning the json
         :return: JSON
         """
-        print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
-            self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
+        #print str(self.id) + ": prevLogTerm... ID: " + str(replica_id) + " match_index= " + str(
+         #   self.match_index[replica_id]) + " len_lead_log= " + str(len(self.log)) + "\n"
 
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
