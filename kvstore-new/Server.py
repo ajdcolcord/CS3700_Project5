@@ -56,13 +56,17 @@ class Server:
 
                 else:
                     if len(self.log) <= msg['lastLogIndex'] + 1:
-                        if self.node_state == "C":
+                        self.become_follower(msg['src'], msg['term'])
+                        # if self.node_state == "C":
+                        #
+                        #     print str(self.id) + " I am a Cand, becoming a follower of " + str(
+                        #         "FFFF") + "!"
+                        #
+                        #     self.become_follower("FFFF", msg['term'])
+                        # elif self.node_state == "F":
+                        #     self.voted_for = None
+                        #     self.voted_for_me = []
 
-                            print str(self.id) + " I am a Cand, becoming a follower of " + str(
-                                "FFFF") + "!"
-
-                            self.become_follower("FFFF", msg['term'])
-                #         elif self.node_state == "F":
                 #             print str(self.id) + " I am a Follower, Becoming *le Follower"
                 #             self.become_follower("FFFF", msg['term'])
 
