@@ -197,6 +197,9 @@ class Server:
             if self.voted_for is None or self.voted_for == json_message['src']:
                 if self.get_lastLogTerm() <= json_message['lastLogTerm']:
                     if len(self.log) - 1 <= json_message['lastLogIndex']:
+
+                        self.leader_id = json_message['src'] # TODO: NEW
+
                         # self.currentTerm = json_message['term']
                         vote = {"src": self.id,
                                 "dst": json_message['src'],
@@ -275,9 +278,9 @@ class Server:
         :param json_message:
         :return:
         """
-        if json_message['term'] >= self.currentTerm:
+        if json_message['term'] >= self.currentTerm and json_message['src'] == self.leader_id:
             self.get_new_election_timeout()
-            self.leader_id = json_message['src']
+            # self.leader_id = json_message['src']
 
             if DEBUG:
                 print str(self.id) + "len log follower - " + str(len(self.log)) + " json_prevIndex=" + str(
