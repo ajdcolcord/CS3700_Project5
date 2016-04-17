@@ -53,18 +53,18 @@ class Server:
 
                             self.become_follower(msg['src'], msg['term'])
                             self.send_redirects_from_log(msg['logLength'] - 1, len(self.log) - 1)
-                    
+
                 else:
                     if len(self.log) <= msg['lastLogIndex'] + 1:
                         if self.node_state == "C":
 
                             print str(self.id) + " I am a Cand, becoming a follower of " + str(
                                 "FFFF") + "!"
-
-                            self.become_follower("FFFF", msg['term'])
-                        elif self.node_state == "F":
-                            print str(self.id) + " I am a Follower, Becoming *le Follower"
-                            self.become_follower("FFFF", msg['term'])
+                #
+                #             self.become_follower("FFFF", msg['term'])
+                #         elif self.node_state == "F":
+                #             print str(self.id) + " I am a Follower, Becoming *le Follower"
+                #             self.become_follower("FFFF", msg['term'])
 
     def leader_receive_message(self, msg):
         """
