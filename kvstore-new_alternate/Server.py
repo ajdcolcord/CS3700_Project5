@@ -41,7 +41,7 @@ class Server:
     def all_receive_message(self, msg):
         if msg['type'] in ['request_vote_rpc', 'append_entries_rpc']:
             if msg['term'] > self.currentTerm:
-                # self.currentTerm = msg['term']
+                self.currentTerm = msg['term'] #todo - just added
 
                 if msg['type'] == 'append_entries_rpc':
                     if self.node_state == "L" and len(self.log) <= msg['logLength']:
