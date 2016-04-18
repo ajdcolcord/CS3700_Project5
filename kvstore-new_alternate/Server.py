@@ -255,7 +255,6 @@ class Server:
         prevLogTerm = 0
         if len(self.log) and self.match_index[replica_id] > 0:
 
-
             prevLogTerm = self.log[self.match_index[replica_id] - 1][1]
 
         entries = self.log[self.match_index[replica_id]: self.match_index[replica_id] + 50]
@@ -291,7 +290,7 @@ class Server:
                 #self.last_applied = json_message['leaderLastApplied']
                 if len(self.log):
                     self.run_command_follower(json_message['leaderLastApplied'])
-                    self.send_append_entries_rpc_ack()
+                    self.send_append_entries_rpc_ack(json_message['logLength'])
 
             elif len(self.log) - 1 >= json_message['prevLogIndex']:
 
@@ -302,19 +301,19 @@ class Server:
                     #self.last_applied = json_message['leaderLastApplied']
                     if len(json_message['entries']):
                         self.run_command_follower(json_message['leaderLastApplied'])
-                        self.send_append_entries_rpc_ack()
+                        self.send_append_entries_rpc_ack(json_message['logLength'])
 
                 elif self.log[json_message['prevLogIndex']][1] != json_message['prevLogTerm']:
                     self.log = self.log[:json_message['prevLogIndex']] + json_message['entries']
-                    self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+                    self.send_append_entries_rpc_ack_decrement(json_message['logLength'])
 
             else:
-                self.send_append_entries_rpc_ack_decrement(json_message['prevLogIndex'])
+                self.send_append_entries_rpc_ack_decrement(json_message['logLength'])
         else:
             print str(self.id) + 'IN-VALID APPEND ENTRY: from' + str(json_message['src']) + ' C_T=' + str(
                 self.currentTerm) + " that_term=" + str(json_message['term'])
 
-    def send_append_entries_rpc_ack(self):
+    def send_append_entries_rpc_ack(self, len_leader_log):
         """
         FOLLOWER
         :return:
@@ -324,23 +323,22 @@ class Server:
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": len(self.log)} #(self.log)}
+                              "match_index": min(len(self.log), len_leader_log)} #(self.log)}
 
         self.send(append_entries_rpc)
 
-    def send_append_entries_rpc_ack_decrement(self, leader_prev_log_index):
+    def send_append_entries_rpc_ack_decrement(self, len_leader_log):
         """
         FOLLOWER
         :return:
         """
-        if DEBUG:
-            print "DECREMENT"
+
         append_entries_rpc = {"src": self.id,
                               "dst": self.leader_id,
                               "leader": self.leader_id,
                               "type": "append_entries_rpc_ack",
                               "term": self.currentTerm,
-                              "match_index": len(self.log)}
+                              "match_index": min(len(self.log), len_leader_log)}
                               #"match_index": max(0, leader_prev_log_index)}
 
         self.send(append_entries_rpc)
