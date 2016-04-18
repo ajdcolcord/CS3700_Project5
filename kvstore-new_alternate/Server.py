@@ -6,7 +6,6 @@ class Server:
     """
     Defines the class of a Server (replica)
     """
-
     def __init__(self, id, replica_ids):
         """
         Initializes a new server with the given ID number and the list of replica IDs
