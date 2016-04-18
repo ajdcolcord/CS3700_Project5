@@ -3,7 +3,7 @@
 import getpass, os, argparse, atexit
 from run import Simulation
 
-LEADERBOARD_OUTPUT = '/course/cs3700f15/stats/project5/'
+LEADERBOARD_OUTPUT = '/course/cs3700sp16/stats/project5/'
 
 # Constants for tuning the difficulty of the tests
 PACKETS_LOW = 500.0
@@ -13,7 +13,8 @@ REPLICAS = 5.0
 MAYFAIL_LOW = 0.01
 MAYFAIL_HIGH = 0.08
 LATENCY_LOW = 0.05 # In fractions of a second
-LATENCY_HIGH = 0.09 # In fractions of a second
+LATENCY_MID = 0.09 
+LATENCY_HIGH = 0.5 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config-directory",
@@ -102,9 +103,9 @@ trials.append(run_test('partition-1.json', 'No drops, 1 easy partition, 20% read
 trials.append(run_test('partition-2.json', 'No drops, 2 easy partitions, 20% read',
                        PACKETS_LOW, REPLICAS, MAYFAIL_LOW, 1.4, LATENCY_LOW))
 trials.append(run_test('partition-3.json', 'No drops, 1 hard partition, 20% read',
-                       PACKETS_LOW, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_LOW))
+                       PACKETS_LOW, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_HIGH))
 trials.append(run_test('partition-4.json', 'No drops, 2 hard partitions, 20% read',
-                       PACKETS_LOW, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_LOW))
+                       PACKETS_LOW, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_HIGH))
 
 ldr = open(LEADERBOARD_OUTPUT + getpass.getuser(), 'w')
 
@@ -112,9 +113,9 @@ print 'Bring the pain (5 replicas, 30 seconds):'
 trials.append(run_test('advanced-1.json', '1000 requests, 10% drops, 2 hard partitions and 1 leader failures, 20% read',
                        PACKETS_HIGH, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_HIGH, ldr))
 trials.append(run_test('advanced-2.json', '800 requests, 15% drops, 2 leader failures, 20% read',
-                       PACKETS_MID, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_HIGH, ldr))
+                       PACKETS_MID, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_MID, ldr))
 trials.append(run_test('advanced-3.json', '500 requests, 50% drops, 1 leader failure, 20% read',
-                       PACKETS_LOW, REPLICAS, MAYFAIL_HIGH, 1.8, LATENCY_HIGH, ldr))
+                       PACKETS_LOW, REPLICAS, MAYFAIL_HIGH, 1.8, LATENCY_MID, ldr))
 
 print 'Bonus Mode Extra Credit! (5 replicas, 30 seconds, 1000 requests):'
 trials.append(run_test('advanced-4.json', '10% drops, 3 hard partions and 1 leader kill, 20% read',
