@@ -11,10 +11,10 @@ PACKETS_MID = 800.0
 PACKETS_HIGH = 1000.0
 REPLICAS = 5.0
 MAYFAIL_LOW = 0.01
-MAYFAIL_HIGH = 0.08
+MAYFAIL_HIGH = 0.1
 LATENCY_LOW = 0.05 # In fractions of a second
 LATENCY_MID = 0.09 
-LATENCY_HIGH = 0.5 
+LATENCY_HIGH = 0.5
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--config-directory",
@@ -45,7 +45,7 @@ def run_test(filename, description, requests, replicas, mayfail, tolerance, late
         
     pf = 'PASS'
     if stats.incorrect:
-        print '\t\tTesting error: >0 incorrect responses to get()' '\t\tTesting error: >0 incorrect responses to get()'
+        print '\t\tTesting error: >0 incorrect responses to get()'
         pf = 'FAIL'
     if stats.died:
         print '\t\tTesting error: >0 replicas died unexpectedly'
@@ -83,9 +83,9 @@ print 'Unreliable network tests (5 replicas, 30 seconds, 500 requests):'
 trials.append(run_test('unreliable-1.json', '5% drops, no failures, 20% read',
                        PACKETS_LOW, REPLICAS, MAYFAIL_LOW, 1.25, LATENCY_LOW))
 trials.append(run_test('unreliable-2.json', '10% drops, no failures, 20% read',
-                       PACKETS_LOW, REPLICAS, MAYFAIL_LOW, 1.3, LATENCY_LOW))
+                       PACKETS_LOW, REPLICAS, MAYFAIL_LOW, 1.3, LATENCY_MID))
 trials.append(run_test('unreliable-3.json', '15% drops, no failures, 20% read',
-                       PACKETS_LOW, REPLICAS, MAYFAIL_LOW, 1.35, LATENCY_LOW))
+                       PACKETS_LOW, REPLICAS, MAYFAIL_LOW, 1.35, LATENCY_MID))
 
 print 'Crash failure tests (5 replicas, 30 seconds, 500 requests):'
 trials.append(run_test('crash-1.json', 'No drops, 1 replica failure, 20% read',
@@ -115,10 +115,10 @@ trials.append(run_test('advanced-1.json', '1000 requests, 10% drops, 2 hard part
 trials.append(run_test('advanced-2.json', '800 requests, 15% drops, 2 leader failures, 20% read',
                        PACKETS_MID, REPLICAS, MAYFAIL_HIGH, 1.5, LATENCY_MID, ldr))
 trials.append(run_test('advanced-3.json', '500 requests, 50% drops, 1 leader failure, 20% read',
-                       PACKETS_LOW, REPLICAS, MAYFAIL_HIGH, 1.8, LATENCY_MID, ldr))
+                       PACKETS_LOW, REPLICAS, 0.3, 2, LATENCY_HIGH, ldr))
 
 print 'Bonus Mode Extra Credit! (5 replicas, 30 seconds, 1000 requests):'
 trials.append(run_test('advanced-4.json', '10% drops, 3 hard partions and 1 leader kill, 20% read',
-                       PACKETS_HIGH, REPLICAS, MAYFAIL_HIGH, 1.8, LATENCY_HIGH, ldr))
+                       PACKETS_HIGH, REPLICAS, MAYFAIL_HIGH, 2, LATENCY_HIGH, ldr))
 
 print 'Passed', sum([1 for x in trials if x]), 'out of', len(trials), 'tests'
